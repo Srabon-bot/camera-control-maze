@@ -90,7 +90,8 @@ function wireGameplayEvents() {
     if (gameState !== "playing") return;
     if (id === "left") maze.requestTurn("left");
     else if (id === "right") maze.requestTurn("right");
-    else if (id === "turn") handleHintReveal();
+    else if (id === "turn") maze.requestTurnAround();
+    else if (id === "hint") handleHintReveal();
   });
   bus.on("tuning:update", (patch) => {
     if (patch.particlesK != null) mage.setParticleCount(patch.particlesK * 1000);

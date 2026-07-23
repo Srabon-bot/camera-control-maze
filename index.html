@@ -36,7 +36,7 @@
     <!-- Hint-window indicator -->
     <div id="stalker-warning" class="hidden">
       <div class="stalker-glyph">🔮</div>
-      <div class="stalker-text">the way is unclear — raise both hands to divine a path</div>
+      <div class="stalker-text">the way is unclear — hold up three fingers to divine a path</div>
     </div>
 
     <!-- Start overlay -->
@@ -45,8 +45,8 @@
         <div class="kicker">SIGNAL &middot; INDEX EXTENSION</div>
         <h1>Ritual Corridor</h1>
         <p>A mage wanders a cursed labyrinth, controlled entirely by hand signs read from your webcam.
-           Open palm to walk, index-up or V-sign to turn left or right at a junction, raise both hands
-           to divine which way leads out.</p>
+           Open palm to walk, index-up or V-sign to turn left or right at a junction, three fingers up
+           to divine which way leads out, both hands up to turn around and retrace your steps.</p>
         <button id="start-btn">enter the maze</button>
         <p class="fineprint">Requires camera access. Nothing leaves your browser.</p>
       </div>
@@ -69,7 +69,8 @@
         <button data-pose="run">🖐️<span>run</span></button>
         <button data-pose="left">☝️<span>left</span></button>
         <button data-pose="right">✌️<span>right</span></button>
-        <button data-pose="turn">🙌<span>hint</span></button>
+        <button data-pose="turn">🙌<span>back</span></button>
+        <button data-pose="hint">3️⃣<span>hint</span></button>
       </div>
     </div>
 
@@ -86,9 +87,10 @@
           <button data-teach="run">🖐️ run</button>
           <button data-teach="left">☝️ left</button>
           <button data-teach="right">✌️ right</button>
-          <button data-teach="turn">🙌 hint</button>
+          <button data-teach="turn">🙌 back</button>
+          <button data-teach="hint">3️⃣ hint</button>
         </div>
-        <div class="teach-status">hold the sign 3s to sample &middot; <span id="teach-samples">run:0 · left:0 · right:0 · turn:0</span></div>
+        <div class="teach-status">hold the sign 3s to sample &middot; <span id="teach-samples">run:0 · left:0 · right:0 · turn:0 · hint:0</span></div>
         <button id="teach-save" class="save-btn">💾 save profile — Sign Lab remembers your hand</button>
       </div>
 
@@ -102,6 +104,7 @@
           <span data-pose="left">☝️</span>
           <span data-pose="right">✌️</span>
           <span data-pose="turn">🙌</span>
+          <span data-pose="hint">3️⃣</span>
           <span data-pose="neutral">✊</span>
         </div>
       </div>

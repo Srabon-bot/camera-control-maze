@@ -168,7 +168,7 @@ function vSignScore(h) {
   return clamp(extScore * 0.6 + curlScore * 0.4, 0, 1);
 }
 
-// Turn: both hands raised up (not touching/clasped — just both up).
+// Turn around: both hands raised up (not touching/clasped — just both up).
 function handsUpScore(features) {
   const hands = features.hands || [];
   if (hands.length < 2) return 0;
@@ -181,12 +181,27 @@ function handsUpScore(features) {
   return Math.min(upness[0], upness[1]);
 }
 
+// Hint: three fingers up (index + middle + ring), pinky curled — one hand.
+// Ring-extended vs. ring-curled is what keeps this unambiguous from the
+// V-sign (right): a finger can't satisfy both at once.
+function threeUpScore(h) {
+  const indexExtended = h.fingerRatio.index > 1.2;
+  const middleExtended = h.fingerRatio.middle > 1.2;
+  const ringExtended = h.fingerRatio.ring > 1.2;
+  const pinkyCurled = h.fingerRatio.pinky < 1.15;
+  if (!indexExtended || !middleExtended || !ringExtended || !pinkyCurled) return 0;
+  const extScore = clamp((Math.min(h.fingerRatio.index, h.fingerRatio.middle, h.fingerRatio.ring) - 1.2) / 0.5, 0, 1);
+  const curlScore = clamp((1.15 - h.fingerRatio.pinky) / 0.4, 0, 1);
+  return clamp(extScore * 0.6 + curlScore * 0.4, 0, 1);
+}
+
 export function classifyPose(features) {
   const scores = {
     run: openPalmScore(features),
     left: bestHandScore(features, indexUpScore),
     right: bestHandScore(features, vSignScore),
     turn: handsUpScore(features),
+    hint: bestHandScore(features, threeUpScore),
   };
   let dominant = "neutral";
   let best = 0.15; // floor: below this, nothing is "the" dominant pose
@@ -210,9 +225,10 @@ export class SignPipeline {
       left: new SignalChannel("left", this.profile.left),
       right: new SignalChannel("right", this.profile.right),
       turn: new SignalChannel("turn", this.profile.turn),
+      hint: new SignalChannel("hint", this.profile.hint),
     };
     this.lastFeatures = { hands: [] };
-    this.lastClassification = { scores: { run: 0, left: 0, right: 0, turn: 0 }, dominant: "neutral" };
+    this.lastClassification = { scores: { run: 0, left: 0, right: 0, turn: 0, hint: 0 }, dominant: "neutral" };
     this.manualPose = null; // QA override from pose-select buttons
 
     bus.on("hand:features", (f) => {
@@ -233,13 +249,13 @@ export class SignPipeline {
       }
     }
     if (patch.confirmFrames != null) {
-      for (const id of ["left", "right", "turn"]) {
+      for (const id of ["left", "right", "turn", "hint"]) {
         this.profile[id].confirmFrames = patch.confirmFrames;
         this.channels[id].reconfigure({ confirmFrames: patch.confirmFrames });
       }
     }
     if (patch.cooldownMs != null) {
-      for (const id of ["left", "right", "turn"]) {
+      for (const id of ["left", "right", "turn", "hint"]) {
         this.profile[id].cooldownMs = patch.cooldownMs;
         this.channels[id].reconfigure({ cooldownMs: patch.cooldownMs });
       }
@@ -263,7 +279,7 @@ export class SignPipeline {
 
   update(dtMs) {
     const classification = this.manualPose
-      ? { scores: { run: 0, left: 0, right: 0, turn: 0, [this.manualPose]: 1 }, dominant: this.manualPose }
+      ? { scores: { run: 0, left: 0, right: 0, turn: 0, hint: 0, [this.manualPose]: 1 }, dominant: this.manualPose }
       : classifyPose(this.lastFeatures);
     this.lastClassification = classification;
 

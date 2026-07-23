@@ -8,10 +8,13 @@ threshold → cooldown → feedback** — wearing a game costume.
 The maze is a proper generated labyrinth (randomized-DFS "perfect maze" —
 exactly one path between any two points, real dead ends, real branches).
 Walk it one corridor-length at a time; at each junction the open paths
-(left/right/straight) are shown as they come into view, and you steer with
-hand signs. Take a wrong branch and you'll dead-end — the mage automatically
-turns about-face there so you can walk back out and try another way. There's
-no fail state, no clock: the only goal is finding the exit.
+(left/right/straight) are shown as they come into view — you can generally
+see about two blocks ahead, not just up to your feet. Steer with hand signs,
+and reverse course any time you like: dead ends auto-turn you around, and you
+can also turn around voluntarily wherever you are. Since the maze layout is
+fixed, retracing your steps always shows the exact same corridor you already
+walked — nothing re-randomizes behind you. There's no fail state, no clock:
+the only goal is finding the exit.
 
 ## Controls (all discrete hand signs, no keyboard)
 
@@ -21,7 +24,8 @@ no fail state, no clock: the only goal is finding the exit.
 | **Stop** | close the hand (fist) | releases walk — eases back to idle |
 | **Left** | one hand, index finger up, others curled | momentary — turns onto the left path at the next junction, if one's open |
 | **Right** | one hand, V-sign (index + middle up, others curled) | momentary — turns onto the right path at the next junction, if one's open |
-| **Divine / hint** | both hands raised up | only works during a periodic "the way is unclear" window (watch for the glyph) — the mage performs a divination and Gemini writes a one-line hint toward the exit. Outside that window it's just the flourish. |
+| **Turn around** | both hands raised up | reverses your heading and steps back into the cell you just came from — works anywhere, not just at dead ends. Useful for regretting a branch. |
+| **Divine / hint** | one hand, three fingers up (index + middle + ring, pinky curled) | only works during a periodic "the way is unclear" window (watch for the glyph) — the mage performs a divination and Gemini writes a one-line hint toward the exit. Outside that window it's just the flourish. |
 
 If a junction only opens left/right (no way straight), the mage pauses there
 until you pick one — no penalty, just waits. Reach the exit and Gemini writes

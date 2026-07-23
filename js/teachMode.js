@@ -7,7 +7,7 @@ export class TeachMode {
   constructor(pipeline) {
     this.pipeline = pipeline;
     this.sampling = null; // { poseId, scores: [], endsAt }
-    this.sampleCounts = { run: 0, left: 0, right: 0, turn: 0 };
+    this.sampleCounts = { run: 0, left: 0, right: 0, turn: 0, hint: 0 };
     this._loadFromStorage();
 
     bus.on("hand:features", () => this._tick());
