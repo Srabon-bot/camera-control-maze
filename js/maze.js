@@ -15,6 +15,9 @@ import {
 const MAZE_SIZE = 15;
 const STEP_BASE_DURATION = 0.32; // seconds for a straight cell-to-cell step
 const STEP_TURN_DURATION = 0.22; // extra seconds added per 180° of turning
+const TOKEN_NOSE_RATIO = 0.34; // token radius as a fraction of a cell
+const BUMP_OFFSET = 0.5 - TOKEN_NOSE_RATIO; // cell-center -> nose-touches-wall distance
+const BUMP_EASE_RATE = 6; // per second
 
 function easeInOutCubic(t) {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
@@ -53,6 +56,7 @@ export class Maze {
     this.elapsed = 0;
     this.atExit = false;
     this.anim = null; // { fromRow, fromCol, toRow, toCol, fromHeading, toHeading, t, duration }
+    this.bump = 0; // 0 = resting at cell center, 1 = nose pressed against the wall ahead
   }
 
   reset() {
@@ -94,10 +98,20 @@ export class Maze {
         this.anim = null;
         if (this.running && !this.atExit) this._advance();
       }
+      this.bump += (0 - this.bump) * Math.min(1, dt * BUMP_EASE_RATE);
       return { atExit: this.atExit };
     }
 
     if (this.running) this._advance();
+
+    // Whenever the way straight ahead is blocked (bend, fork, dead end),
+    // ease the resting position forward until the nose is right against the
+    // wall — visual feedback that nothing further happens here without an
+    // explicit turn/back sign, no matter how long "run" keeps being held.
+    const blockedAhead = !this.options.some((o) => o.rel === "straight");
+    const bumpTarget = blockedAhead ? 1 : 0;
+    this.bump += (bumpTarget - this.bump) * Math.min(1, dt * BUMP_EASE_RATE);
+
     return { atExit: this.atExit };
   }
 
@@ -148,7 +162,15 @@ export class Maze {
   }
 
   _displayState() {
-    if (!this.anim) return { row: this.pos.row, col: this.pos.col, heading: this.heading };
+    if (!this.anim) {
+      const rad = (this.heading * Math.PI) / 180;
+      const offset = BUMP_OFFSET * this.bump;
+      return {
+        row: this.pos.row - Math.cos(rad) * offset,
+        col: this.pos.col + Math.sin(rad) * offset,
+        heading: this.heading,
+      };
+    }
     const p = easeInOutCubic(clamp(this.anim.t / this.anim.duration, 0, 1));
     const row = this.anim.fromRow + (this.anim.toRow - this.anim.fromRow) * p;
     const col = this.anim.fromCol + (this.anim.toCol - this.anim.fromCol) * p;
@@ -208,7 +230,7 @@ export class Maze {
     const { row, col, heading } = this._displayState();
     const cx = (col + 0.5) * cell;
     const cy = (row + 0.5) * cell;
-    const tokenR = cell * 0.34;
+    const tokenR = cell * TOKEN_NOSE_RATIO;
     ctx.save();
     ctx.translate(cx, cy);
     ctx.rotate((heading * Math.PI) / 180);
