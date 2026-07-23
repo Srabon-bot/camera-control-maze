@@ -48,7 +48,6 @@ export class Maze {
     this.mazeData = generateMaze(MAZE_SIZE);
     this.pos = { ...this.mazeData.start };
     this.heading = startingHeading(this.mazeData.cells[this.pos.row][this.pos.col]);
-    this.pendingChoice = null;
     this.options = junctionOptions(this.mazeData.cells[this.pos.row][this.pos.col], this.heading);
     this.distance = 0;
     this.elapsed = 0;
@@ -62,14 +61,17 @@ export class Maze {
   }
 
   requestTurn(rel) {
-    // rel: 'left' | 'right'. Arms the choice for the next step; ignored if
-    // that direction isn't actually open at the current cell.
+    // rel: 'left' | 'right'. Executes immediately — same as requestTurnAround
+    // — since run/left/right are all single-hand poses and can't be shown at
+    // once: waiting for a later "run" pulse to consume an armed choice meant
+    // a left/right sign by itself never actually moved you anywhere.
     if (this.atExit) return false;
-    if (!this.options.some((o) => o.rel === rel)) {
+    const chosen = this.options.find((o) => o.rel === rel);
+    if (!chosen) {
       bus.emit("maze:blocked", { rel });
       return false;
     }
-    this.pendingChoice = rel;
+    this._startStep(chosen);
     return true;
   }
 
@@ -103,14 +105,12 @@ export class Maze {
     const opts = this.options;
     let chosen = null;
     if (opts.length === 1) chosen = opts[0];
-    else if (this.pendingChoice) chosen = opts.find((o) => o.rel === this.pendingChoice) || null;
-    if (!chosen) chosen = opts.find((o) => o.rel === "straight") || null;
+    else chosen = opts.find((o) => o.rel === "straight") || null;
     if (!chosen) return; // waiting at a junction for a turn sign
     this._startStep(chosen);
   }
 
   _startStep(chosen) {
-    this.pendingChoice = null;
     const deltaDeg = chosen.rel === "left" ? -90 : chosen.rel === "right" ? 90 : chosen.rel === "back" ? 180 : 0;
     const fromPos = this.pos;
     const toPos = step(fromPos.row, fromPos.col, chosen.dir);

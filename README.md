@@ -22,16 +22,16 @@ speed) is revealed on the win screen.
 |---|---|---|
 | **Walk** | open palm, all 4 fingers extended, facing camera | sustain — token advances cell-to-cell while held |
 | **Stop** | close the hand (fist) | releases walk — token pauses at the current cell |
-| **Left** | one hand, index finger up, others curled | momentary — turns onto the left path at the next junction, if one's open |
-| **Right** | one hand, V-sign (index + middle up, others curled) | momentary — turns onto the right path at the next junction, if one's open |
+| **Left** | one hand, index finger up, others curled | momentary — immediately turns onto the left path from the current cell, if one's open |
+| **Right** | one hand, V-sign (index + middle up, others curled) | momentary — immediately turns onto the right path from the current cell, if one's open |
 | **Back** | one hand, three fingers up (index + middle + ring, pinky curled) | reverses your heading and steps back into the cell you just came from — works anywhere, not just at dead ends. Useful for regretting a branch. |
 
-If a junction only opens left/right (no way straight), the token pauses
-there until you pick one — no penalty, just waits. Since the whole maze is
-visible from the start, plan your turn ahead of the junction: sign left or
-right any time before you arrive (the walk sign and a turn sign can't be
-shown at once, so briefly drop the walk pose, sign the turn, then resume
-walking). Reach the exit and Gemini writes a short closing "escape" line.
+Left/right/back all act the instant you sign them — you don't need to be
+holding walk at the same time (in fact you can't: they're all single-hand
+poses, so briefly drop the walk pose to sign one, then resume walking). If a
+junction only opens left/right (no way straight), the token just waits there
+until you pick one — no penalty. Reach the exit and Gemini writes a short
+closing "escape" line.
 
 The Sign Lab panel (right side) is always visible and live: signal graph,
 per-finger ratios, Teach Mode (hold a sign 3s to calibrate it to *your*
