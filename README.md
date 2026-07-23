@@ -9,12 +9,10 @@ The maze is a proper generated labyrinth (randomized-DFS "perfect maze" —
 exactly one path between any two points, real dead ends, real branches), a
 sizeable 15×15 grid drawn in full on a 2D canvas so the whole layout is
 visible at once. Your token slides cell to cell as you hold the walk sign,
-turning at junctions when you sign a direction. Reverse course any time you
-like: dead ends auto-turn you around, and you can also turn around
-voluntarily wherever you are. There's no fail state, but there is a clock:
-it starts the moment you enter, and reaching the exit faster is worth more
-points — a live timer runs in the HUD, and your score (weighted toward
-speed) is revealed on the win screen.
+turning only when you explicitly sign a direction. There's no fail state,
+but there is a clock: it starts the moment you enter, and reaching the exit
+faster is worth more points — a live timer runs in the HUD, and your score
+(weighted toward speed) is revealed on the win screen.
 
 ## Controls (all discrete hand signs, no keyboard)
 
@@ -24,22 +22,19 @@ speed) is revealed on the win screen.
 | **Stop** | close the hand (fist) | releases walk — token pauses at the current cell |
 | **Left** | one hand, index finger up, others curled | momentary — immediately turns onto the left path from the current cell, if one's open |
 | **Right** | one hand, V-sign (index + middle up, others curled) | momentary — immediately turns onto the right path from the current cell, if one's open |
-| **Back** | one hand, three fingers up (index + middle + ring, pinky curled) | reverses your heading and steps back into the cell you just came from — works anywhere, not just at dead ends. Useful for regretting a branch. |
+| **Back** | one hand, three fingers up (index + middle + ring, pinky curled) | reverses your heading and steps back into the cell you just came from — required to escape a dead end (there's no auto-turn-around), and works anywhere else too, any time you want to retrace a branch. |
 
 Left/right/back all act the instant you sign them — you don't need to be
 holding walk at the same time (in fact you can't: they're all single-hand
 poses, so briefly drop the walk pose to sign one, then resume walking).
 
-Walking through a plain corridor (nowhere else to go) never needs a sign —
-holding walk carries you straight through those on its own. But every real
-junction (anywhere the path could branch, even if going straight is one of
-the options) always needs a deliberate action: either sign left/right/back,
-or drop and re-raise the walk pose to explicitly confirm going straight. A
-single held walk sign only carries you straight through *one* such junction
-for free before it needs re-confirming — so holding walk and doing nothing
-else will always run out of "free" progress at the next real junction and
-wait for you, rather than wandering the whole maze on autopilot. Reach the
-exit and Gemini writes a short closing "escape" line.
+Holding walk is **strictly forward motion and nothing else** — it never
+turns the token, under any circumstance. It carries you straight through a
+plain corridor on its own, but the moment the path bends, forks, or dead-ends
+— anything that would change your heading at all — it simply stops and waits,
+no matter how long you keep holding walk. The only way the token ever turns
+is an explicit left/right/back sign. Reach the exit and Gemini writes a
+short closing "escape" line.
 
 The Sign Lab panel (right side) is always visible and live: signal graph,
 per-finger ratios, Teach Mode (hold a sign 3s to calibrate it to *your*
