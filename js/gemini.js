@@ -8,15 +8,15 @@ const MIN_CALL_INTERVAL_MS = 4000; // cooldown on the AI call itself, same
 let lastCallAt = 0;
 
 const FALLBACK_INCANTATIONS = [
-  "the dark folds back, if only for a breath.",
-  "something unseen loses its grip.",
-  "the corridor exhales.",
-  "a name unsaid is enough to banish it.",
+  "the walls lean, just slightly, toward the way out.",
+  "something in the dark remembers the path, if not the name of it.",
+  "the labyrinth exhales — a direction, not a promise.",
+  "a way opens where a wall stood a breath ago.",
 ];
 const FALLBACK_VERDICTS = [
-  "the corridor keeps what it catches.",
-  "not far enough, not fast enough.",
-  "the dark remembers your face now.",
+  "the labyrinth opens its hand, and lets you go.",
+  "the dark remembers your face, but the way out remembers it too.",
+  "free — for now, and for whatever that's worth down here.",
 ];
 
 function fallback(list) {

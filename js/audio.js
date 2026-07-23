@@ -8,7 +8,6 @@ const CUSTOM_FILES = {
   drone: "assets/audio/drone.mp3",
   thrum: "assets/audio/thrum.mp3",
   whoosh: "assets/audio/whoosh.mp3",
-  hit: "assets/audio/hit.mp3",
 };
 
 async function tryLoadBuffer(ctx, url) {
@@ -34,10 +33,10 @@ export class GameAudio {
 
   async init() {
     this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const [drone, thrum, whoosh, hit] = await Promise.all(
+    const [drone, thrum, whoosh] = await Promise.all(
       Object.values(CUSTOM_FILES).map((url) => tryLoadBuffer(this.ctx, url))
     );
-    this.buffers = { drone, thrum, whoosh, hit };
+    this.buffers = { drone, thrum, whoosh };
 
     this._startAmbientDrone();
 
@@ -47,12 +46,7 @@ export class GameAudio {
       if (id === "turn") this._playOneShot("whoosh", 880);
       else this._playOneShot("thrum", 520, 0.15);
     });
-    bus.on("stalker:warn", () => this._setDroneTension(true));
-    bus.on("stalker:banished", () => this._setDroneTension(false));
-    bus.on("stalker:caught", () => {
-      this._setDroneTension(false);
-      this._playOneShot("hit", 140, 0.3);
-    });
+    bus.on("maze:hintwindow", ({ open }) => this._setDroneTension(open));
   }
 
   async resume() {

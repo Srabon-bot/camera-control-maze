@@ -9,15 +9,18 @@ const MODEL = "gemini-2.0-flash";
 
 const PROMPTS = {
   incantation: (ctx) =>
-    `You are the narrator of a short spooky mage-runner game called "Ritual Corridor". ` +
-    `The player just raised both hands and banished a shadow-wisp that was stalking them ` +
-    `from behind, mid-run through a cursed corridor. Banishes so far: ${ctx?.banishes ?? 0}. ` +
-    `Write ONE short, moody, archaic-sounding incantation line the mage utters at that instant. ` +
+    `You are the narrator of a short spooky maze-wandering game called "Ritual Corridor". ` +
+    `The player, lost in a cursed labyrinth, just raised both hands and performed a divination ` +
+    `to sense the way out. The way forward leans ${ctx?.hintDirection ?? "onward"}. ` +
+    `Hints used so far: ${ctx?.hintsUsed ?? 0}. ` +
+    `Write ONE short, moody, archaic-sounding incantation line the mage utters as the vision comes to them, ` +
+    `subtly hinting at that direction without naming it outright. ` +
     `Max 12 words. No quotation marks, no explanation, just the line.`,
   verdict: (ctx) =>
-    `You are the narrator of a short spooky mage-runner game called "Ritual Corridor". ` +
-    `The player's run just ended after ${Math.round(ctx?.distance ?? 0)}m and ${ctx?.banishes ?? 0} banishes. ` +
-    `Write ONE short, ominous closing line about what the corridor did to them. ` +
+    `You are the narrator of a short spooky maze-wandering game called "Ritual Corridor". ` +
+    `The player just found their way out of the cursed labyrinth after wandering ${Math.round(ctx?.distance ?? 0)}m ` +
+    `and using ${ctx?.hints ?? 0} divinations along the way. ` +
+    `Write ONE short, eerie-but-triumphant closing line about their escape. ` +
     `Max 15 words. No quotation marks, no explanation, just the line.`,
 };
 

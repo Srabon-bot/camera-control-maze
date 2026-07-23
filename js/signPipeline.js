@@ -135,8 +135,12 @@ function bestHandScore(features, scoreFn) {
 function openPalmScore(features) {
   const h = (features.hands || [])[0];
   if (!h) return 0;
-  const avgRatio =
-    (h.fingerRatio.index + h.fingerRatio.middle + h.fingerRatio.ring + h.fingerRatio.pinky) / 4;
+  const ratios = [h.fingerRatio.index, h.fingerRatio.middle, h.fingerRatio.ring, h.fingerRatio.pinky];
+  // Any one curled finger disqualifies "open palm" outright — otherwise a
+  // V-sign or index-up (two curled fingers) still averages high enough to
+  // out-score "run", same 1.15 curl line the other pose checks use.
+  if (Math.min(...ratios) < 1.15) return 0;
+  const avgRatio = ratios.reduce((a, b) => a + b, 0) / 4;
   const ratioScore = clamp((avgRatio - 1.0) / 0.45, 0, 1);
   const facingScore = clamp((h.palmFacing + 1) / 2, 0, 1);
   return clamp(ratioScore * 0.75 + facingScore * 0.25, 0, 1);

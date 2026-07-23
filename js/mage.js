@@ -1,7 +1,6 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
-const LANES = [-1.6, 0, 1.6];
 const MODEL_URL = "assets/models/mage.glb"; // placeholder rig (see README) — drop in a
 // real mage GLTF+Mixamo export here later; the animation names below
 // ("Idle"/"Run") are the only thing that needs to match.
@@ -15,17 +14,16 @@ export class Mage {
     this.scene = scene;
     this.group = new THREE.Group();
     this.group.position.set(0, 0, 0);
+    this.group.rotation.y = 0;
     scene.scene.add(this.group);
 
-    this.laneIndex = 1;
-    this.laneTween = null; // { from, to, t, duration }
-    this.spinTween = null; // { from, duration, t }
+    this.spinTween = null; // { from, delta, duration, t, onComplete }
     this.mixer = null;
     this.actions = {};
     this.currentLoop = null;
     this.runWeight = 0;
 
-    this.banishBurst = this._buildBanishParticles();
+    this.revealBurst = this._buildRevealParticles();
   }
 
   async load() {
@@ -33,7 +31,7 @@ export class Mage {
     const gltf = await loader.loadAsync(MODEL_URL);
     const model = gltf.scene;
     model.scale.setScalar(1.55); // "medium-large" mage presence
-    // Soldier.glb's default forward is already -z, matching the corridor's
+    // Soldier.glb's default forward is already -z, matching the maze's
     // travel direction — no rotation needed (was Math.PI, which turned the
     // mage to face the camera instead of down the corridor).
     this.group.add(model);
@@ -70,45 +68,26 @@ export class Mage {
     this.currentLoop = name;
   }
 
-  strafe(direction) {
-    // direction: -1 (left) or +1 (right)
-    const target = Math.max(0, Math.min(LANES.length - 1, this.laneIndex + direction));
-    if (target === this.laneIndex) return false;
-    this.laneIndex = target;
-    this.laneTween = { from: this.group.position.x, to: LANES[target], t: 0, duration: 0.28 };
-    return true;
-  }
-
-  turnAround(onComplete) {
+  // Rotates the mage by deltaRad (signed: negative = left, positive = right,
+  // ±PI = about-face). Used both for maze-junction turns (silent) and the
+  // hands-up hint-reveal flourish (a full 2*PI spin back to facing forward).
+  turnBy(deltaRad, onComplete) {
     if (this.spinTween) return false;
-    this.spinTween = { from: this.group.rotation.y, t: 0, duration: 0.65, onComplete };
+    const duration = 0.3 + (Math.abs(deltaRad) / Math.PI) * 0.35;
+    this.spinTween = { from: this.group.rotation.y, delta: deltaRad, t: 0, duration, onComplete };
     return true;
   }
 
   update(dt) {
     if (this.mixer) this.mixer.update(dt);
 
-    if (this.laneTween) {
-      this.laneTween.t += dt;
-      const p = Math.min(1, this.laneTween.t / this.laneTween.duration);
-      const e = easeOutCubic(p);
-      this.group.position.x = THREE.MathUtils.lerp(this.laneTween.from, this.laneTween.to, e);
-      this.group.rotation.z = Math.sin(p * Math.PI) * -0.18 * Math.sign(this.laneTween.to - this.laneTween.from || 1);
-      if (p >= 1) {
-        this.group.rotation.z = 0;
-        this.laneTween = null;
-      }
-    }
-
     if (this.spinTween) {
       this.spinTween.t += dt;
       const p = Math.min(1, this.spinTween.t / this.spinTween.duration);
       const e = easeOutCubic(p);
-      this.group.rotation.y = this.spinTween.from + e * Math.PI * 2;
+      this.group.rotation.y = this.spinTween.from + e * this.spinTween.delta;
       if (p >= 1) {
-        // Land back exactly where we started (a full 360 whirl), normalized
-        // so repeated spins don't accumulate unbounded radians.
-        this.group.rotation.y = this.spinTween.from % (Math.PI * 2);
+        this.group.rotation.y = (this.spinTween.from + this.spinTween.delta) % (Math.PI * 2);
         const cb = this.spinTween.onComplete;
         this.spinTween = null;
         if (cb) cb();
@@ -120,10 +99,10 @@ export class Mage {
       this.glowRing.material.opacity = 0.4 + Math.sin(performance.now() * 0.002) * 0.15;
     }
 
-    this._updateBanishParticles(dt);
+    this._updateRevealParticles(dt);
   }
 
-  _buildBanishParticles() {
+  _buildRevealParticles() {
     const count = 400;
     const geo = new THREE.BufferGeometry();
     const positions = new Float32Array(count * 3);
@@ -136,9 +115,9 @@ export class Mage {
     return { points, geo, positions, velocities, count, life: 0, active: false };
   }
 
-  setBanishParticleCount(count) {
+  setParticleCount(count) {
     // Sign Lab "particles" slider — rebuild the buffer at a new density.
-    const b = this.banishBurst;
+    const b = this.revealBurst;
     if (count === b.count) return;
     b.count = count;
     b.positions = new Float32Array(count * 3);
@@ -146,8 +125,8 @@ export class Mage {
     b.geo.setAttribute("position", new THREE.BufferAttribute(b.positions, 3));
   }
 
-  triggerBanishBurst() {
-    const b = this.banishBurst;
+  triggerRevealBurst() {
+    const b = this.revealBurst;
     for (let i = 0; i < b.count; i++) {
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.random() * Math.PI;
@@ -165,8 +144,8 @@ export class Mage {
     b.points.material.opacity = 1;
   }
 
-  _updateBanishParticles(dt) {
-    const b = this.banishBurst;
+  _updateRevealParticles(dt) {
+    const b = this.revealBurst;
     if (!b.active) return;
     b.life -= dt * 0.9;
     if (b.life <= 0) {
@@ -183,5 +162,3 @@ export class Mage {
     b.geo.attributes.position.needsUpdate = true;
   }
 }
-
-export { LANES };

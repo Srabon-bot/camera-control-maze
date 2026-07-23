@@ -23,21 +23,20 @@
 
     <!-- HUD -->
     <div id="hud">
-      <div class="hud-title">CURSED TECHNIQUE &nbsp;—&nbsp; <span id="hud-state">RESTING</span></div>
+      <div class="hud-title">CURSED LABYRINTH &nbsp;—&nbsp; <span id="hud-state">RESTING</span></div>
       <div class="hud-row">
-        <span>distance <b id="hud-distance">0</b>m</span>
-        <span>banishes <b id="hud-banishes">0</b></span>
-        <span class="focus-pips" id="hud-focus"><i></i><i></i><i></i></span>
+        <span>wandered <b id="hud-distance">0</b>m</span>
+        <span>divinations <b id="hud-banishes">0</b></span>
       </div>
     </div>
 
-    <!-- Gemini-written incantation, shown briefly on a successful banish -->
+    <!-- Gemini-written incantation, shown briefly on a hint reveal -->
     <div id="incantation" class="hidden"></div>
 
-    <!-- Rear-stalker warning -->
+    <!-- Hint-window indicator -->
     <div id="stalker-warning" class="hidden">
-      <div class="stalker-glyph">☠</div>
-      <div class="stalker-text">something is behind you — raise both hands to banish it</div>
+      <div class="stalker-glyph">🔮</div>
+      <div class="stalker-text">the way is unclear — raise both hands to divine a path</div>
     </div>
 
     <!-- Start overlay -->
@@ -45,20 +44,21 @@
       <div class="start-card">
         <div class="kicker">SIGNAL &middot; INDEX EXTENSION</div>
         <h1>Ritual Corridor</h1>
-        <p>A mage runs a spooky corridor, controlled entirely by hand signs read from your webcam.
-           Open palm to run, index-up or V-sign to sidestep, raise both hands to banish what follows you.</p>
-        <button id="start-btn">enter the corridor</button>
+        <p>A mage wanders a cursed labyrinth, controlled entirely by hand signs read from your webcam.
+           Open palm to walk, index-up or V-sign to turn left or right at a junction, raise both hands
+           to divine which way leads out.</p>
+        <button id="start-btn">enter the maze</button>
         <p class="fineprint">Requires camera access. Nothing leaves your browser.</p>
       </div>
     </div>
 
-    <!-- Game over overlay -->
+    <!-- Win overlay -->
     <div id="gameover-overlay" class="hidden">
       <div class="start-card">
-        <div class="kicker">THE CORRIDOR CLAIMS YOU</div>
-        <h1>Banished</h1>
-        <p>distance: <b id="final-distance">0</b>m &middot; banishes: <b id="final-banishes">0</b></p>
-        <button id="restart-btn">try again</button>
+        <div class="kicker">THE LABYRINTH RELEASES YOU</div>
+        <h1>Free</h1>
+        <p>wandered: <b id="final-distance">0</b>m &middot; divinations: <b id="final-banishes">0</b></p>
+        <button id="restart-btn">wander again</button>
       </div>
     </div>
 
@@ -69,7 +69,7 @@
         <button data-pose="run">🖐️<span>run</span></button>
         <button data-pose="left">☝️<span>left</span></button>
         <button data-pose="right">✌️<span>right</span></button>
-        <button data-pose="turn">🙌<span>turn</span></button>
+        <button data-pose="turn">🙌<span>hint</span></button>
       </div>
     </div>
 
@@ -86,7 +86,7 @@
           <button data-teach="run">🖐️ run</button>
           <button data-teach="left">☝️ left</button>
           <button data-teach="right">✌️ right</button>
-          <button data-teach="turn">🙌 turn</button>
+          <button data-teach="turn">🙌 hint</button>
         </div>
         <div class="teach-status">hold the sign 3s to sample &middot; <span id="teach-samples">run:0 · left:0 · right:0 · turn:0</span></div>
         <button id="teach-save" class="save-btn">💾 save profile — Sign Lab remembers your hand</button>
@@ -125,7 +125,7 @@
           <input type="range" id="s-smoothing" min="0.05" max="1.0" step="0.01" value="0.35" />
         </div>
         <div class="slider-row">
-          <label>banish particles (&times;1000) <span id="v-particles">6</span></label>
+          <label>reveal particles (&times;1000) <span id="v-particles">6</span></label>
           <input type="range" id="s-particles" min="1" max="20" step="1" value="6" />
         </div>
       </details>

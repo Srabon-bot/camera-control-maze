@@ -1,23 +1,31 @@
-# Ritual Corridor — hand-sign mage runner
+# Ritual Corridor — hand-sign maze wander
 
-A third-person 3D "camera room": a mage advances through a spooky corridor,
-controlled entirely by hand signs read from your webcam. Same pipeline as
-every other room in the gallery — **noisy signal → threshold → cooldown →
-feedback** — wearing a game costume.
+A third-person 3D "camera room": a mage is lost in a cursed labyrinth and
+slowly finds their way out, controlled entirely by hand signs read from your
+webcam. Same pipeline as every other room in the gallery — **noisy signal →
+threshold → cooldown → feedback** — wearing a game costume.
+
+The maze is a proper generated labyrinth (randomized-DFS "perfect maze" —
+exactly one path between any two points, real dead ends, real branches).
+Walk it one corridor-length at a time; at each junction the open paths
+(left/right/straight) are shown as they come into view, and you steer with
+hand signs. Take a wrong branch and you'll dead-end — the mage automatically
+turns about-face there so you can walk back out and try another way. There's
+no fail state, no clock: the only goal is finding the exit.
 
 ## Controls (all discrete hand signs, no keyboard)
 
 | Sign | Pose | Effect |
 |---|---|---|
-| **Run** | open palm, all 4 fingers extended, facing camera | sustain — mage runs while held |
-| **Stop** | close the hand (fist) | releases run — eases back to idle |
-| **Left** | one hand, index finger up, others curled | momentary — one lane-shift, short cooldown |
-| **Right** | one hand, V-sign (index + middle up, others curled) | momentary — one lane-shift, short cooldown |
-| **Turn / banish** | both hands raised up | rare, longer cooldown — mage whirls, bursts a banishing spell. If a shadow-wisp is currently stalking you from behind (watch for the warning), this banishes it and Gemini writes a one-line incantation on screen. If nothing's stalking you, it's just the flourish. |
+| **Walk** | open palm, all 4 fingers extended, facing camera | sustain — mage walks while held |
+| **Stop** | close the hand (fist) | releases walk — eases back to idle |
+| **Left** | one hand, index finger up, others curled | momentary — turns onto the left path at the next junction, if one's open |
+| **Right** | one hand, V-sign (index + middle up, others curled) | momentary — turns onto the right path at the next junction, if one's open |
+| **Divine / hint** | both hands raised up | only works during a periodic "the way is unclear" window (watch for the glyph) — the mage performs a divination and Gemini writes a one-line hint toward the exit. Outside that window it's just the flourish. |
 
-Dodge obstacle gates by being in the open lane when they reach you. Get
-caught by the stalker 3 times (or hit 3 gates) and the run ends — Gemini
-writes a short closing "verdict" line.
+If a junction only opens left/right (no way straight), the mage pauses there
+until you pick one — no penalty, just waits. Reach the exit and Gemini writes
+a short closing "escape" line.
 
 The Sign Lab panel (right side) is always visible and live: signal graph,
 per-finger ratios, Teach Mode (hold a sign 3s to calibrate it to *your*
@@ -36,11 +44,11 @@ npm i -g vercel      # once
 vercel dev
 ```
 
-Then open the printed local URL and click "enter the corridor" (grants
-camera access).
+Then open the printed local URL and click "enter the maze" (grants camera
+access).
 
 If you just want to test the frontend without the Gemini bonus, `npx serve .`
-works too — turn-around will still work, just falls back to a canned
+works too — the divination hint will still work, just falls back to a canned
 incantation line instead of a live Gemini one.
 
 ## Gemini API key
@@ -61,9 +69,9 @@ incantation line instead of a live Gemini one.
   the room runs end to end today. Swap in a real animated mage: export a
   GLTF with clips literally named `Idle` and `Run` (that's all `mage.js`
   looks for) and drop it in at the same path.
-- `assets/audio/` is empty. Drop in `drone.mp3` (ambient loop),
-  `thrum.mp3` (loops while a sign is being held), `whoosh.mp3` (turn-around
-  cast), and `hit.mp3` (caught by the stalker) — `audio.js` picks them up
+- `assets/audio/` is empty. Drop in `drone.mp3` (ambient loop, rises in
+  tension while a hint window is open), `thrum.mp3` (loops while a sign is
+  being held), and `whoosh.mp3` (divination cast) — `audio.js` picks them up
   automatically. Until then, everything is synthesized on the fly so the
   room still has sound.
 - `assets/mediapipe/hand_landmarker.task` is self-hosted (not fetched from

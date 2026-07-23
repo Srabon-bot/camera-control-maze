@@ -5,37 +5,29 @@ import { TeachMode } from "./teachMode.js";
 import { SignLabPanel } from "./signLabPanel.js";
 import { Scene } from "./scene.js";
 import { Mage } from "./mage.js";
-import { Corridor } from "./corridor.js";
+import { Maze } from "./maze.js";
 import { GameAudio } from "./audio.js";
 import { requestIncantation, requestVerdict } from "./gemini.js";
 
 const video = document.getElementById("webcam-video");
 const startOverlay = document.getElementById("start-overlay");
 const startBtn = document.getElementById("start-btn");
-const gameoverOverlay = document.getElementById("gameover-overlay");
+const winOverlay = document.getElementById("gameover-overlay");
 const restartBtn = document.getElementById("restart-btn");
 const hudState = document.getElementById("hud-state");
 const hudDistance = document.getElementById("hud-distance");
-const hudBanishes = document.getElementById("hud-banishes");
-const hudFocus = document.getElementById("hud-focus");
+const hudHints = document.getElementById("hud-banishes");
 const finalDistance = document.getElementById("final-distance");
-const finalBanishes = document.getElementById("final-banishes");
-const stalkerWarningEl = document.getElementById("stalker-warning");
+const finalHints = document.getElementById("final-banishes");
+const hintWindowEl = document.getElementById("stalker-warning");
 const incantationEl = document.getElementById("incantation");
 const canvas = document.getElementById("scene-canvas");
 
-let gameState = "menu"; // menu | playing | gameover
+let gameState = "menu"; // menu | playing | won
 let distance = 0;
-let banishes = 0;
-let focus = 3;
+let hintsUsed = 0;
 
-let pipeline, teachMode, panel, scene, mage, corridor, audio;
-
-function setFocusPips() {
-  [...hudFocus.children].forEach((el, i) => {
-    el.classList.toggle("lost", i >= focus);
-  });
-}
+let pipeline, teachMode, panel, scene, mage, maze, audio;
 
 function showIncantation(text) {
   if (!text) return;
@@ -45,22 +37,15 @@ function showIncantation(text) {
   showIncantation._t = setTimeout(() => incantationEl.classList.remove("visible"), 3200);
 }
 
-function loseFocus() {
-  if (gameState !== "playing") return;
-  focus -= 1;
-  setFocusPips();
-  if (focus <= 0) gameOver();
-}
-
-async function gameOver() {
-  gameState = "gameover";
-  hudState.textContent = "BANISHED";
+async function reachExit() {
+  gameState = "won";
+  hudState.textContent = "FOUND THE WAY OUT";
   mage.setRunning(false);
   finalDistance.textContent = Math.round(distance);
-  finalBanishes.textContent = banishes;
-  gameoverOverlay.classList.remove("hidden");
-  const verdict = await requestVerdict({ distance, banishes });
-  if (gameState === "gameover") {
+  finalHints.textContent = hintsUsed;
+  winOverlay.classList.remove("hidden");
+  const verdict = await requestVerdict({ distance, hints: hintsUsed });
+  if (gameState === "won") {
     finalDistance.parentElement.insertAdjacentHTML(
       "afterend",
       `<p class="fineprint" id="verdict-line">${verdict}</p>`
@@ -70,33 +55,28 @@ async function gameOver() {
 
 function resetRun() {
   distance = 0;
-  banishes = 0;
-  focus = 3;
-  setFocusPips();
+  hintsUsed = 0;
   hudDistance.textContent = "0";
-  hudBanishes.textContent = "0";
+  hudHints.textContent = "0";
   hudState.textContent = "RESTING";
   document.getElementById("verdict-line")?.remove();
-  corridor.reset();
-  mage.group.position.set(0, 0, 0);
+  maze.reset();
   mage.group.rotation.y = 0;
-  mage.laneIndex = 1;
-  gameoverOverlay.classList.add("hidden");
-  stalkerWarningEl.classList.add("hidden");
+  winOverlay.classList.add("hidden");
+  hintWindowEl.classList.add("hidden");
   gameState = "playing";
-  hudState.textContent = "RUNNING";
+  hudState.textContent = "WANDERING";
 }
 
-async function handleTurnFire() {
-  mage.turnAround(() => {
-    mage.triggerBanishBurst();
-    const banished = corridor.banishStalker();
-    if (banished) {
-      banishes += 1;
-      hudBanishes.textContent = banishes;
-      requestIncantation({ banishes }).then(showIncantation);
-    }
-  });
+async function handleHintReveal() {
+  if (!maze.consumeHintWindow()) return;
+  const hint = maze.currentHint();
+  mage.turnBy(Math.PI * 2, () => {}); // full flourish spin, lands back facing forward
+  mage.triggerRevealBurst();
+  hintsUsed += 1;
+  hudHints.textContent = hintsUsed;
+  const line = await requestIncantation({ hintDirection: hint?.rel ?? "onward", hintsUsed });
+  showIncantation(line);
 }
 
 function wireGameplayEvents() {
@@ -108,19 +88,15 @@ function wireGameplayEvents() {
   });
   bus.on("sign:fire", ({ id }) => {
     if (gameState !== "playing") return;
-    if (id === "left") mage.strafe(-1);
-    else if (id === "right") mage.strafe(1);
-    else if (id === "turn") handleTurnFire();
+    if (id === "left") maze.requestTurn("left");
+    else if (id === "right") maze.requestTurn("right");
+    else if (id === "turn") handleHintReveal();
   });
   bus.on("tuning:update", (patch) => {
-    if (patch.particlesK != null) mage.setBanishParticleCount(patch.particlesK * 1000);
+    if (patch.particlesK != null) mage.setParticleCount(patch.particlesK * 1000);
   });
-  bus.on("stalker:warn", () => stalkerWarningEl.classList.remove("hidden"));
-  bus.on("stalker:banished", () => stalkerWarningEl.classList.add("hidden"));
-  bus.on("stalker:caught", () => {
-    stalkerWarningEl.classList.add("hidden");
-    loseFocus();
-  });
+  bus.on("maze:hintwindow", ({ open }) => hintWindowEl.classList.toggle("hidden", !open));
+  bus.on("maze:exit", () => reachExit());
 }
 
 async function boot() {
@@ -145,13 +121,13 @@ async function boot() {
   scene = new Scene(canvas);
   mage = new Mage(scene);
   await mage.load();
-  corridor = new Corridor(scene);
+  maze = new Maze(mage);
 
   wireGameplayEvents();
 
   startOverlay.classList.add("hidden");
   gameState = "playing";
-  hudState.textContent = "RUNNING";
+  hudState.textContent = "WANDERING";
 
   let lastTime = performance.now();
   function frame(now) {
@@ -162,9 +138,8 @@ async function boot() {
     mage.update(dt);
 
     if (gameState === "playing") {
-      const { hit } = corridor.update(dt, mage, gameState);
-      if (hit) loseFocus();
-      distance = corridor.distance;
+      maze.update(dt, gameState);
+      distance = maze.distance;
       hudDistance.textContent = Math.round(distance);
     }
 
@@ -177,11 +152,11 @@ async function boot() {
 
 startBtn.addEventListener("click", () => {
   startBtn.disabled = true;
-  startBtn.textContent = "waking the corridor…";
+  startBtn.textContent = "waking the maze…";
   boot().catch((err) => {
     console.error(err);
     startBtn.disabled = false;
-    startBtn.textContent = "enter the corridor";
+    startBtn.textContent = "enter the maze";
     alert("Couldn't start: " + err.message + "\n(Camera access is required.)");
   });
 });

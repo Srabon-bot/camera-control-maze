@@ -72,15 +72,6 @@ html, body {
   color: var(--cream);
 }
 .hud-row b { color: var(--cyan); }
-.focus-pips i {
-  display: inline-block;
-  width: 10px; height: 10px;
-  margin-left: 4px;
-  border-radius: 50%;
-  background: var(--red);
-  box-shadow: 0 0 6px var(--red);
-}
-.focus-pips i.lost { background: #2a2a2a; box-shadow: none; }
 
 /* ---------- Incantation text ---------- */
 #incantation {
