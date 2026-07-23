@@ -66,56 +66,62 @@
 
     <!-- Sign Lab debug panel -->
     <aside id="sign-lab">
-      <div class="panel-block">
-        <div class="panel-label">SIGNAL: <span id="dominant-channel">index extension</span></div>
-        <canvas id="signal-graph" width="300" height="70"></canvas>
+      <div class="panel-header">
+        <span>SIGN LAB</span>
+        <button id="sign-lab-toggle" aria-label="toggle debug panel" aria-expanded="true">▾</button>
       </div>
-
-      <div class="panel-block" id="teach-block">
-        <div class="panel-label warn">🖐 TEACH MODE — perform the sign, we learn your hand</div>
-        <div class="teach-buttons">
-          <button data-teach="run">🖐️ run</button>
-          <button data-teach="left">☝️ left</button>
-          <button data-teach="right">✌️ right</button>
-          <button data-teach="back">3️⃣ back</button>
+      <div id="sign-lab-body">
+        <div class="panel-block">
+          <div class="panel-label">SIGNAL: <span id="dominant-channel">index extension</span></div>
+          <canvas id="signal-graph" width="300" height="70"></canvas>
         </div>
-        <div class="teach-status">hold the sign 3s to sample &middot; <span id="teach-samples">run:0 · left:0 · right:0 · back:0</span></div>
-        <button id="teach-save" class="save-btn">💾 save profile — Sign Lab remembers your hand</button>
+
+        <div class="panel-block" id="teach-block">
+          <div class="panel-label warn">🖐 TEACH MODE — perform the sign, we learn your hand</div>
+          <div class="teach-buttons">
+            <button data-teach="run">🖐️ run</button>
+            <button data-teach="left">☝️ left</button>
+            <button data-teach="right">✌️ right</button>
+            <button data-teach="back">3️⃣ back</button>
+          </div>
+          <div class="teach-status">hold the sign 3s to sample &middot; <span id="teach-samples">run:0 · left:0 · right:0 · back:0</span></div>
+          <button id="teach-save" class="save-btn">💾 save profile — Sign Lab remembers your hand</button>
+        </div>
+
+        <div class="panel-block">
+          <div class="panel-label ok">✎ SIGN LAB — live read</div>
+          <div class="mono-row" id="finger-readout">T·  I·  M·  R·  P·</div>
+          <div class="mono-row" id="pinch-readout">pinch 0.00 &middot; angle 0° &middot; hands 0</div>
+          <div class="mono-row">pose: <b id="pose-readout">neutral</b></div>
+          <div class="pose-emojis">
+            <span data-pose="run">🖐️</span>
+            <span data-pose="left">☝️</span>
+            <span data-pose="right">✌️</span>
+            <span data-pose="back">3️⃣</span>
+            <span data-pose="neutral">✊</span>
+          </div>
+        </div>
+
+        <details class="panel-block" open>
+          <summary>▶ ADVANCED — thresholds &amp; feel</summary>
+          <div class="slider-row">
+            <label>sensitivity <span id="v-sensitivity">1.00</span></label>
+            <input type="range" id="s-sensitivity" min="0.5" max="1.5" step="0.01" value="1.0" />
+          </div>
+          <div class="slider-row">
+            <label>confirm frames <span id="v-confirm">4</span></label>
+            <input type="range" id="s-confirm" min="1" max="10" step="1" value="4" />
+          </div>
+          <div class="slider-row">
+            <label>cooldown (ms) <span id="v-cooldown">450</span></label>
+            <input type="range" id="s-cooldown" min="100" max="2000" step="50" value="450" />
+          </div>
+          <div class="slider-row">
+            <label>smoothing &alpha; <span id="v-smoothing">0.35</span></label>
+            <input type="range" id="s-smoothing" min="0.05" max="1.0" step="0.01" value="0.35" />
+          </div>
+        </details>
       </div>
-
-      <div class="panel-block">
-        <div class="panel-label ok">✎ SIGN LAB — live read</div>
-        <div class="mono-row" id="finger-readout">T·  I·  M·  R·  P·</div>
-        <div class="mono-row" id="pinch-readout">pinch 0.00 &middot; angle 0° &middot; hands 0</div>
-        <div class="mono-row">pose: <b id="pose-readout">neutral</b></div>
-        <div class="pose-emojis">
-          <span data-pose="run">🖐️</span>
-          <span data-pose="left">☝️</span>
-          <span data-pose="right">✌️</span>
-          <span data-pose="back">3️⃣</span>
-          <span data-pose="neutral">✊</span>
-        </div>
-      </div>
-
-      <details class="panel-block" open>
-        <summary>▶ ADVANCED — thresholds &amp; feel</summary>
-        <div class="slider-row">
-          <label>sensitivity <span id="v-sensitivity">1.00</span></label>
-          <input type="range" id="s-sensitivity" min="0.5" max="1.5" step="0.01" value="1.0" />
-        </div>
-        <div class="slider-row">
-          <label>confirm frames <span id="v-confirm">4</span></label>
-          <input type="range" id="s-confirm" min="1" max="10" step="1" value="4" />
-        </div>
-        <div class="slider-row">
-          <label>cooldown (ms) <span id="v-cooldown">450</span></label>
-          <input type="range" id="s-cooldown" min="100" max="2000" step="50" value="450" />
-        </div>
-        <div class="slider-row">
-          <label>smoothing &alpha; <span id="v-smoothing">0.35</span></label>
-          <input type="range" id="s-smoothing" min="0.05" max="1.0" step="0.01" value="0.35" />
-        </div>
-      </details>
     </aside>
   </div>
 

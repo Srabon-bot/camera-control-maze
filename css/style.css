@@ -9,6 +9,22 @@
   --cream: #efe6d8;
   --mono: "JetBrains Mono", "Courier New", monospace;
   --serif: Georgia, "Times New Roman", serif;
+
+  /* layout scale — clamp() keeps every HUD element proportional to the
+     viewport instead of colliding at fixed pixel sizes on small screens */
+  --edge-gap: clamp(8px, 2vw, 16px);
+  --cam-width: clamp(120px, 22vw, 220px);
+  --panel-width: clamp(200px, 30vw, 320px);
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+
+  /* single z-index scale so layering intent is explicit and never guessed */
+  --z-scene: 0;
+  --z-hud: 5;
+  --z-floating: 10;
+  --z-overlay: 20;
 }
 
 * { box-sizing: border-box; }
@@ -25,7 +41,7 @@ html, body {
 #app {
   position: relative;
   width: 100vw;
-  height: 100vh;
+  height: 100dvh;
 }
 
 #scene-canvas {
@@ -34,6 +50,7 @@ html, body {
   width: 100%;
   height: 100%;
   display: block;
+  z-index: var(--z-scene);
 }
 
 #webcam-video {
@@ -48,27 +65,33 @@ html, body {
 /* ---------- HUD ---------- */
 #hud {
   position: absolute;
-  top: 18px;
+  top: calc(var(--safe-top) + var(--edge-gap));
   left: 50%;
   transform: translateX(-50%);
+  max-width: min(94vw, 640px);
   text-align: center;
   pointer-events: none;
   text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+  z-index: var(--z-hud);
 }
 .hud-title {
   font-family: var(--mono);
   letter-spacing: 0.12em;
-  font-size: 13px;
+  font-size: clamp(10px, 1.6vw, 13px);
   color: var(--gold);
   margin-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .hud-row {
   display: flex;
-  gap: 22px;
+  flex-wrap: wrap;
+  gap: clamp(10px, 2vw, 22px);
   align-items: center;
   justify-content: center;
   font-family: var(--mono);
-  font-size: 13px;
+  font-size: clamp(10px, 1.6vw, 13px);
   color: var(--cream);
 }
 .hud-row b { color: var(--cyan); }
@@ -86,13 +109,17 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow-y: auto;
   background: radial-gradient(ellipse at center, rgba(20,24,22,0.92), rgba(4,5,5,0.98));
-  z-index: 20;
+  z-index: var(--z-overlay);
 }
 .start-card {
-  max-width: 480px;
+  max-width: min(480px, 92vw);
+  max-height: calc(100dvh - 2 * var(--edge-gap));
+  overflow-y: auto;
   text-align: center;
-  padding: 40px;
+  padding: clamp(20px, 5vw, 40px);
+  margin: var(--edge-gap);
   border: 1px solid var(--panel-border);
   border-radius: 4px;
   background: var(--panel-bg);
@@ -106,7 +133,7 @@ html, body {
 }
 .start-card h1 {
   font-family: var(--serif);
-  font-size: 40px;
+  font-size: clamp(26px, 6vw, 40px);
   margin: 0 0 16px;
   color: var(--cream);
 }
@@ -131,17 +158,19 @@ html, body {
 /* ---------- Webcam thumbnail ---------- */
 #cam-thumb {
   position: absolute;
-  bottom: 16px;
-  left: 16px;
-  width: 220px;
+  bottom: calc(var(--safe-bottom) + var(--edge-gap));
+  left: calc(var(--safe-left) + var(--edge-gap));
+  width: var(--cam-width);
   border: 1px solid var(--panel-border);
   border-radius: 4px;
   overflow: hidden;
   background: #000;
+  z-index: var(--z-floating);
 }
 #cam-overlay {
-  width: 220px;
-  height: 165px;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 220 / 165;
   display: block;
 }
 .pose-buttons {
@@ -150,35 +179,74 @@ html, body {
 }
 .pose-buttons button {
   flex: 1;
+  min-width: 0;
   background: transparent;
   border: none;
   border-top: 1px solid var(--panel-border);
   color: var(--cream);
-  font-size: 16px;
+  font-size: clamp(11px, 2.6vw, 16px);
   padding: 6px 0 4px;
   cursor: pointer;
   font-family: var(--mono);
 }
-.pose-buttons button span { display: block; font-size: 9px; color: #8a8378; }
+.pose-buttons button span { display: block; font-size: clamp(7px, 1.6vw, 9px); color: #8a8378; }
 .pose-buttons button:hover, .pose-buttons button.active { background: rgba(217,165,72,0.18); }
 
 /* ---------- Sign Lab panel ---------- */
 #sign-lab {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 320px;
-  max-height: calc(100vh - 32px);
+  top: calc(var(--safe-top) + var(--edge-gap));
+  right: calc(var(--safe-right) + var(--edge-gap));
+  width: var(--panel-width);
+  max-height: calc(100dvh - 2 * var(--edge-gap));
   overflow-y: auto;
   background: var(--panel-bg);
   border: 1px solid var(--panel-border);
   border-radius: 4px;
-  padding: 14px;
   font-family: var(--mono);
   font-size: 12px;
+  z-index: var(--z-floating);
 }
 #sign-lab::-webkit-scrollbar { width: 6px; }
 #sign-lab::-webkit-scrollbar-thumb { background: var(--panel-border); border-radius: 3px; }
+
+.panel-header {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--panel-bg);
+  color: var(--gold-dim);
+  letter-spacing: 0.1em;
+  font-size: 11px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  border-radius: 4px 4px 0 0;
+}
+#sign-lab-toggle {
+  background: transparent;
+  border: 1px solid var(--panel-border);
+  color: var(--cream);
+  border-radius: 3px;
+  width: 22px;
+  height: 22px;
+  line-height: 1;
+  cursor: pointer;
+  font-family: var(--mono);
+  flex: none;
+}
+#sign-lab-toggle:hover { border-color: var(--gold); color: var(--gold); }
+
+#sign-lab-body { padding: 0 14px 14px; }
+
+/* Collapsed: only the header stays on screen, so the debug panel can
+   never overlap the camera thumbnail or maze view, at any viewport size. */
+#sign-lab.collapsed { max-height: none; }
+#sign-lab.collapsed #sign-lab-body { display: none; }
+#sign-lab.collapsed .panel-header { border-bottom: none; }
+#sign-lab.collapsed #sign-lab-toggle { transform: rotate(-90deg); }
 
 .panel-block { margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.06); }
 .panel-block:last-child { border-bottom: none; }
@@ -253,4 +321,24 @@ details.panel-block summary {
 .slider-row input[type="range"] {
   width: 100%;
   accent-color: var(--gold);
+}
+
+/* ---------- Responsive breakpoints ----------
+   #cam-thumb (bottom-left) and #sign-lab (top-right) are sized off
+   --cam-width/--panel-width, which already shrink with vw via clamp().
+   Below ~640px tall/wide there isn't room for a full-height debug panel
+   next to the camera view, so it collapses to its header bar (see
+   #sign-lab.collapsed above) — signLabPanel.js decides the default via
+   matchMedia, the header toggle always lets the player override it. */
+@media (max-width: 640px), (max-height: 480px) {
+  :root {
+    --cam-width: clamp(96px, 34vw, 160px);
+    --panel-width: min(300px, 90vw);
+  }
+  .pose-buttons button span { display: none; }
+}
+
+@media (max-width: 380px) {
+  .hud-row { gap: 10px; }
+  #cam-thumb { width: clamp(84px, 40vw, 130px); }
 }

@@ -31,6 +31,7 @@ export class SignLabPanel {
     this._wireSliders();
     this._wireTeachButtons();
     this._wireManualPoseButtons();
+    this._wireCollapseToggle();
 
     bus.on("hand:features", (f) => this._onFeatures(f));
     bus.on("teach:start", ({ poseId }) => this._onTeachStart(poseId));
@@ -71,6 +72,23 @@ export class SignLabPanel {
       btn.textContent = "✔ saved — Sign Lab knows your hand now";
       setTimeout(() => (btn.textContent = original), 1800);
     });
+  }
+
+  _wireCollapseToggle() {
+    const panel = document.getElementById("sign-lab");
+    const toggle = document.getElementById("sign-lab-toggle");
+    const setCollapsed = (collapsed) => {
+      panel.classList.toggle("collapsed", collapsed);
+      toggle.setAttribute("aria-expanded", String(!collapsed));
+    };
+    toggle.addEventListener("click", () => setCollapsed(!panel.classList.contains("collapsed")));
+
+    // On small screens there isn't room for the debug panel next to the
+    // camera view and maze, so start collapsed there; the toggle still
+    // lets the player open it on demand at any size.
+    const smallScreen = window.matchMedia("(max-width: 640px), (max-height: 480px)");
+    setCollapsed(smallScreen.matches);
+    smallScreen.addEventListener("change", (e) => setCollapsed(e.matches));
   }
 
   _wireManualPoseButtons() {

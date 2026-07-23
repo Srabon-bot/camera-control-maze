@@ -241,6 +241,17 @@ export class Maze {
     ctx.lineTo(-tokenR * 0.75, tokenR * 0.75);
     ctx.closePath();
     ctx.fill();
+
+    // L/R live in the corners of the token's own (invisible) bounding square,
+    // not the screen — drawn in the same rotated frame as the triangle so
+    // they turn with the piece and always mark ITS left/right, not the camera's.
+    ctx.font = `700 ${tokenR * 0.55}px "JetBrains Mono", "Courier New", monospace`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "rgba(111,216,200,0.75)";
+    ctx.fillText("L", -tokenR * 0.9, tokenR * 0.78);
+    ctx.fillText("R", tokenR * 0.9, tokenR * 0.78);
+
     ctx.restore();
 
     ctx.restore();
