@@ -12,8 +12,8 @@ export class Scene {
     this.scene.fog = new THREE.FogExp2(0x070a0d, 0.032);
 
     this.camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 200);
-    this.cameraRigOffset = new THREE.Vector3(0, 2.3, 4.6);
-    this.cameraLookAhead = new THREE.Vector3(0, 1.3, -6);
+    this.cameraRigOffset = new THREE.Vector3(0, 3.6, 5.2);
+    this.cameraLookAhead = new THREE.Vector3(0, 1.0, -7);
 
     const ambient = new THREE.AmbientLight(0x4a5850, 2.4);
     this.scene.add(ambient);

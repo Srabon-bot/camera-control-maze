@@ -33,7 +33,9 @@ export class Mage {
     const gltf = await loader.loadAsync(MODEL_URL);
     const model = gltf.scene;
     model.scale.setScalar(1.55); // "medium-large" mage presence
-    model.rotation.y = Math.PI; // face -z (down the corridor)
+    // Soldier.glb's default forward is already -z, matching the corridor's
+    // travel direction — no rotation needed (was Math.PI, which turned the
+    // mage to face the camera instead of down the corridor).
     this.group.add(model);
 
     this.mixer = new THREE.AnimationMixer(model);
