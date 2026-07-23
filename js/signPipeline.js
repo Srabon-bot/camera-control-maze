@@ -7,7 +7,7 @@ function clamp(v, lo, hi) {
 
 // One reusable state machine for "noisy signal -> threshold -> cooldown ->
 // feedback." mode:'sustain' (run: fires while held, decays back to idle on
-// release) or mode:'trigger' (left/right/turn: fires once per confirmed
+// release) or mode:'trigger' (left/right/back: fires once per confirmed
 // hold, then a cooldown that ignores input so it can't be machine-gunned).
 export class SignalChannel {
   constructor(id, cfg) {
@@ -168,20 +168,7 @@ function vSignScore(h) {
   return clamp(extScore * 0.6 + curlScore * 0.4, 0, 1);
 }
 
-// Turn around: both hands raised up (not touching/clasped — just both up).
-function handsUpScore(features) {
-  const hands = features.hands || [];
-  if (hands.length < 2) return 0;
-  // Normalized landmark y: 0 = top of frame, 1 = bottom. "Up" ramps in as a
-  // wrist rises above mid-frame, maxing out well above shoulder height.
-  const upness = hands
-    .map((h) => clamp((0.55 - h.wrist.y) / 0.35, 0, 1))
-    .sort((a, b) => b - a);
-  // Require BOTH of the two highest hands to be up, not just one.
-  return Math.min(upness[0], upness[1]);
-}
-
-// Hint: three fingers up (index + middle + ring), pinky curled — one hand.
+// Back: three fingers up (index + middle + ring), pinky curled — one hand.
 // Ring-extended vs. ring-curled is what keeps this unambiguous from the
 // V-sign (right): a finger can't satisfy both at once.
 function threeUpScore(h) {
@@ -200,8 +187,7 @@ export function classifyPose(features) {
     run: openPalmScore(features),
     left: bestHandScore(features, indexUpScore),
     right: bestHandScore(features, vSignScore),
-    turn: handsUpScore(features),
-    hint: bestHandScore(features, threeUpScore),
+    back: bestHandScore(features, threeUpScore),
   };
   let dominant = "neutral";
   let best = 0.15; // floor: below this, nothing is "the" dominant pose
@@ -224,11 +210,10 @@ export class SignPipeline {
       run: new SignalChannel("run", this.profile.run),
       left: new SignalChannel("left", this.profile.left),
       right: new SignalChannel("right", this.profile.right),
-      turn: new SignalChannel("turn", this.profile.turn),
-      hint: new SignalChannel("hint", this.profile.hint),
+      back: new SignalChannel("back", this.profile.back),
     };
     this.lastFeatures = { hands: [] };
-    this.lastClassification = { scores: { run: 0, left: 0, right: 0, turn: 0, hint: 0 }, dominant: "neutral" };
+    this.lastClassification = { scores: { run: 0, left: 0, right: 0, back: 0 }, dominant: "neutral" };
     this.manualPose = null; // QA override from pose-select buttons
 
     bus.on("hand:features", (f) => {
@@ -249,13 +234,13 @@ export class SignPipeline {
       }
     }
     if (patch.confirmFrames != null) {
-      for (const id of ["left", "right", "turn", "hint"]) {
+      for (const id of ["left", "right", "back"]) {
         this.profile[id].confirmFrames = patch.confirmFrames;
         this.channels[id].reconfigure({ confirmFrames: patch.confirmFrames });
       }
     }
     if (patch.cooldownMs != null) {
-      for (const id of ["left", "right", "turn", "hint"]) {
+      for (const id of ["left", "right", "back"]) {
         this.profile[id].cooldownMs = patch.cooldownMs;
         this.channels[id].reconfigure({ cooldownMs: patch.cooldownMs });
       }
@@ -279,7 +264,7 @@ export class SignPipeline {
 
   update(dtMs) {
     const classification = this.manualPose
-      ? { scores: { run: 0, left: 0, right: 0, turn: 0, hint: 0, [this.manualPose]: 1 }, dominant: this.manualPose }
+      ? { scores: { run: 0, left: 0, right: 0, back: 0, [this.manualPose]: 1 }, dominant: this.manualPose }
       : classifyPose(this.lastFeatures);
     this.lastClassification = classification;
 

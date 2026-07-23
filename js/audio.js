@@ -27,8 +27,6 @@ export class GameAudio {
     this.buffers = {};
     this.holdingId = null;
     this.holdingGain = null;
-    this.droneFilter = null;
-    this.droneTargetFreq = 260;
   }
 
   async init() {
@@ -43,10 +41,9 @@ export class GameAudio {
     bus.on("sign:hold", ({ progress }) => this._onHold(progress));
     bus.on("sign:idle", () => this._onIdle());
     bus.on("sign:fire", ({ id }) => {
-      if (id === "turn") this._playOneShot("whoosh", 880);
+      if (id === "back") this._playOneShot("whoosh", 880);
       else this._playOneShot("thrum", 520, 0.15);
     });
-    bus.on("maze:hintwindow", ({ open }) => this._setDroneTension(open));
   }
 
   async resume() {
@@ -66,7 +63,6 @@ export class GameAudio {
       gain.gain.value = 0.35;
       src.connect(filter).connect(gain).connect(ctx.destination);
       src.start();
-      this.droneFilter = filter;
     } else {
       // Synthesized drone: two detuned low oscillators through a lowpass.
       const gain = ctx.createGain();
@@ -82,14 +78,7 @@ export class GameAudio {
         osc.connect(filter);
         osc.start();
       });
-      this.droneFilter = filter;
     }
-  }
-
-  _setDroneTension(tense) {
-    if (!this.droneFilter) return;
-    const target = tense ? 700 : 260;
-    this.droneFilter.frequency.setTargetAtTime(target, this.ctx.currentTime, 0.3);
   }
 
   _onHold(progress) {

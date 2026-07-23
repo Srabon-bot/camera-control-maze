@@ -115,24 +115,4 @@ export function junctionOptions(cell, heading) {
   return options;
 }
 
-// Next step toward the exit from `from` (shortest path via BFS), expressed
-// relative to `heading` — used for the hands-up hint reveal.
-export function hintDirection(mazeData, from, heading) {
-  const dist = bfsDistances(mazeData.cells, mazeData.size, mazeData.exit);
-  const curDist = dist[from.row][from.col];
-  if (curDist === 0) return null; // already at the exit
-  let best = null;
-  for (const d of DIRS) {
-    if (!mazeData.cells[from.row][from.col][d]) continue;
-    const { row: nr, col: nc } = step(from.row, from.col, d);
-    if (dist[nr][nc] === curDist - 1) {
-      best = d;
-      break;
-    }
-  }
-  const dh = normalizeHeading(DIR_HEADING[best] - heading);
-  const rel = dh === 0 ? "straight" : dh === 90 ? "right" : "left";
-  return { rel, dir: best, remaining: curDist };
-}
-
 export { OPPOSITE };

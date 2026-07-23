@@ -6,8 +6,7 @@ export const POSE_META = {
   run: { emoji: "🖐️", label: "run" },
   left: { emoji: "☝️", label: "left" },
   right: { emoji: "✌️", label: "right" },
-  turn: { emoji: "🙌", label: "back" },
-  hint: { emoji: "3️⃣", label: "hint" },
+  back: { emoji: "3️⃣", label: "back" },
   neutral: { emoji: "✊", label: "neutral" },
 };
 
@@ -33,17 +32,11 @@ export function defaultProfile() {
       confirmFrames: 4,
       cooldownMs: 450,
     },
-    turn: {
+    back: {
       mode: "trigger",
       enterThreshold: 0.6,
       confirmFrames: 6,
       cooldownMs: 1600,
-    },
-    hint: {
-      mode: "trigger",
-      enterThreshold: 0.6,
-      confirmFrames: 4,
-      cooldownMs: 800,
     },
   };
 }

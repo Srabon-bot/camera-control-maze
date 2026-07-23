@@ -8,18 +8,9 @@
 const MODEL = "gemini-2.0-flash";
 
 const PROMPTS = {
-  incantation: (ctx) =>
-    `You are the narrator of a short spooky maze-wandering game called "Ritual Corridor". ` +
-    `The player, lost in a cursed labyrinth, just raised both hands and performed a divination ` +
-    `to sense the way out. The way forward leans ${ctx?.hintDirection ?? "onward"}. ` +
-    `Hints used so far: ${ctx?.hintsUsed ?? 0}. ` +
-    `Write ONE short, moody, archaic-sounding incantation line the mage utters as the vision comes to them, ` +
-    `subtly hinting at that direction without naming it outright. ` +
-    `Max 12 words. No quotation marks, no explanation, just the line.`,
   verdict: (ctx) =>
     `You are the narrator of a short spooky maze-wandering game called "Ritual Corridor". ` +
-    `The player just found their way out of the cursed labyrinth after wandering ${Math.round(ctx?.distance ?? 0)}m ` +
-    `and using ${ctx?.hints ?? 0} divinations along the way. ` +
+    `The player just found their way out of the cursed labyrinth after wandering ${Math.round(ctx?.distance ?? 0)} cells. ` +
     `Write ONE short, eerie-but-triumphant closing line about their escape. ` +
     `Max 15 words. No quotation marks, no explanation, just the line.`,
 };

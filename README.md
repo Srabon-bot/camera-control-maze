@@ -1,41 +1,37 @@
 # Ritual Corridor — hand-sign maze wander
 
-A third-person 3D "camera room": a mage is lost in a cursed labyrinth and
-slowly finds their way out, controlled entirely by hand signs read from your
-webcam. Same pipeline as every other room in the gallery — **noisy signal →
-threshold → cooldown → feedback** — wearing a game costume.
+A top-down "camera room": a token wanders a cursed labyrinth, controlled
+entirely by hand signs read from your webcam. Same pipeline as every other
+room in the gallery — **noisy signal → threshold → cooldown → feedback** —
+wearing a game costume.
 
 The maze is a proper generated labyrinth (randomized-DFS "perfect maze" —
-exactly one path between any two points, real dead ends, real branches).
-Walk it one corridor-length at a time; at each junction the open paths
-(left/right/straight) are shown as they come into view — you can generally
-see about two blocks ahead, not just up to your feet. Steer with hand signs,
-and reverse course any time you like: dead ends auto-turn you around, and you
-can also turn around voluntarily wherever you are. Since the maze layout is
-fixed, retracing your steps always shows the exact same corridor you already
-walked — nothing re-randomizes behind you. There's no fail state, no clock:
-the only goal is finding the exit.
+exactly one path between any two points, real dead ends, real branches),
+drawn in full on a 2D canvas so the whole layout is visible at once. Your
+token slides cell to cell as you hold the walk sign, turning at junctions
+when you sign a direction. Reverse course any time you like: dead ends
+auto-turn you around, and you can also turn around voluntarily wherever you
+are. There's no fail state, no clock: the only goal is finding the exit.
 
 ## Controls (all discrete hand signs, no keyboard)
 
 | Sign | Pose | Effect |
 |---|---|---|
-| **Walk** | open palm, all 4 fingers extended, facing camera | sustain — mage walks while held |
-| **Stop** | close the hand (fist) | releases walk — eases back to idle |
+| **Walk** | open palm, all 4 fingers extended, facing camera | sustain — token advances cell-to-cell while held |
+| **Stop** | close the hand (fist) | releases walk — token pauses at the current cell |
 | **Left** | one hand, index finger up, others curled | momentary — turns onto the left path at the next junction, if one's open |
 | **Right** | one hand, V-sign (index + middle up, others curled) | momentary — turns onto the right path at the next junction, if one's open |
-| **Turn around** | both hands raised up | reverses your heading and steps back into the cell you just came from — works anywhere, not just at dead ends. Useful for regretting a branch. |
-| **Divine / hint** | one hand, three fingers up (index + middle + ring, pinky curled) | only works during a periodic "the way is unclear" window (watch for the glyph) — the mage performs a divination and Gemini writes a one-line hint toward the exit. Outside that window it's just the flourish. |
+| **Back** | one hand, three fingers up (index + middle + ring, pinky curled) | reverses your heading and steps back into the cell you just came from — works anywhere, not just at dead ends. Useful for regretting a branch. |
 
-If a junction only opens left/right (no way straight), the mage pauses there
-until you pick one — no penalty, just waits. Reach the exit and Gemini writes
-a short closing "escape" line.
+If a junction only opens left/right (no way straight), the token pauses
+there until you pick one — no penalty, just waits. Reach the exit and Gemini
+writes a short closing "escape" line.
 
 The Sign Lab panel (right side) is always visible and live: signal graph,
 per-finger ratios, Teach Mode (hold a sign 3s to calibrate it to *your*
 hand/webcam/lighting), and sliders for sensitivity/confirm-frames/cooldown/
-smoothing/particle density. Tune it the deck's way: push both extremes,
-binary-search the middle, leave the sliders live.
+smoothing. Tune it the deck's way: push both extremes, binary-search the
+middle, leave the sliders live.
 
 ## Run it locally
 
@@ -52,8 +48,8 @@ Then open the printed local URL and click "enter the maze" (grants camera
 access).
 
 If you just want to test the frontend without the Gemini bonus, `npx serve .`
-works too — the divination hint will still work, just falls back to a canned
-incantation line instead of a live Gemini one.
+works too — the escape line will still work, just falls back to a canned
+line instead of a live Gemini one.
 
 ## Gemini API key
 
@@ -68,16 +64,10 @@ incantation line instead of a live Gemini one.
 
 ## Assets
 
-- `assets/models/mage.glb` is currently three.js's own **Soldier.glb** demo
-  rig (idle/run/walk animations, MIT-licensed example asset) — a stand-in so
-  the room runs end to end today. Swap in a real animated mage: export a
-  GLTF with clips literally named `Idle` and `Run` (that's all `mage.js`
-  looks for) and drop it in at the same path.
-- `assets/audio/` is empty. Drop in `drone.mp3` (ambient loop, rises in
-  tension while a hint window is open), `thrum.mp3` (loops while a sign is
-  being held), and `whoosh.mp3` (divination cast) — `audio.js` picks them up
-  automatically. Until then, everything is synthesized on the fly so the
-  room still has sound.
+- `assets/audio/` is empty. Drop in `drone.mp3` (ambient loop), `thrum.mp3`
+  (loops while a sign is being held), and `whoosh.mp3` (back-turn cast) —
+  `audio.js` picks them up automatically. Until then, everything is
+  synthesized on the fly so the room still has sound.
 - `assets/mediapipe/hand_landmarker.task` is self-hosted (not fetched from
   Google's CDN at runtime) so a flaky network can't kill the room mid-demo.
 
@@ -85,4 +75,4 @@ incantation line instead of a live Gemini one.
 
 Push to GitHub, then `vercel` (or "deploy this to Vercel through GitHub" via
 Vercel's dashboard import). Don't forget step 3 above — the deployed link
-won't get incantations without the env var set in Vercel itself.
+won't get an escape line without the env var set in Vercel itself.

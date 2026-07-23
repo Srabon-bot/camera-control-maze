@@ -3,11 +3,9 @@ import { initHandTracking, startDetectionLoop } from "./handTracking.js";
 import { SignPipeline } from "./signPipeline.js";
 import { TeachMode } from "./teachMode.js";
 import { SignLabPanel } from "./signLabPanel.js";
-import { Scene } from "./scene.js";
-import { Mage } from "./mage.js";
 import { Maze } from "./maze.js";
 import { GameAudio } from "./audio.js";
-import { requestIncantation, requestVerdict } from "./gemini.js";
+import { requestVerdict } from "./gemini.js";
 
 const video = document.getElementById("webcam-video");
 const startOverlay = document.getElementById("start-overlay");
@@ -16,35 +14,30 @@ const winOverlay = document.getElementById("gameover-overlay");
 const restartBtn = document.getElementById("restart-btn");
 const hudState = document.getElementById("hud-state");
 const hudDistance = document.getElementById("hud-distance");
-const hudHints = document.getElementById("hud-banishes");
 const finalDistance = document.getElementById("final-distance");
-const finalHints = document.getElementById("final-banishes");
-const hintWindowEl = document.getElementById("stalker-warning");
-const incantationEl = document.getElementById("incantation");
 const canvas = document.getElementById("scene-canvas");
+const ctx = canvas.getContext("2d");
 
 let gameState = "menu"; // menu | playing | won
 let distance = 0;
-let hintsUsed = 0;
 
-let pipeline, teachMode, panel, scene, mage, maze, audio;
+let pipeline, teachMode, panel, maze, audio;
 
-function showIncantation(text) {
-  if (!text) return;
-  incantationEl.textContent = text;
-  incantationEl.classList.add("visible");
-  clearTimeout(showIncantation._t);
-  showIncantation._t = setTimeout(() => incantationEl.classList.remove("visible"), 3200);
+function resizeCanvas() {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = window.innerWidth * dpr;
+  canvas.height = window.innerHeight * dpr;
+  canvas.style.width = window.innerWidth + "px";
+  canvas.style.height = window.innerHeight + "px";
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
 
 async function reachExit() {
   gameState = "won";
   hudState.textContent = "FOUND THE WAY OUT";
-  mage.setRunning(false);
-  finalDistance.textContent = Math.round(distance);
-  finalHints.textContent = hintsUsed;
+  finalDistance.textContent = distance;
   winOverlay.classList.remove("hidden");
-  const verdict = await requestVerdict({ distance, hints: hintsUsed });
+  const verdict = await requestVerdict({ distance });
   if (gameState === "won") {
     finalDistance.parentElement.insertAdjacentHTML(
       "afterend",
@@ -55,48 +48,22 @@ async function reachExit() {
 
 function resetRun() {
   distance = 0;
-  hintsUsed = 0;
   hudDistance.textContent = "0";
-  hudHints.textContent = "0";
   hudState.textContent = "RESTING";
   document.getElementById("verdict-line")?.remove();
   maze.reset();
-  mage.group.rotation.y = 0;
   winOverlay.classList.add("hidden");
-  hintWindowEl.classList.add("hidden");
   gameState = "playing";
   hudState.textContent = "WANDERING";
 }
 
-async function handleHintReveal() {
-  if (!maze.consumeHintWindow()) return;
-  const hint = maze.currentHint();
-  mage.turnBy(Math.PI * 2, () => {}); // full flourish spin, lands back facing forward
-  mage.triggerRevealBurst();
-  hintsUsed += 1;
-  hudHints.textContent = hintsUsed;
-  const line = await requestIncantation({ hintDirection: hint?.rel ?? "onward", hintsUsed });
-  showIncantation(line);
-}
-
 function wireGameplayEvents() {
-  bus.on("sign:sustainstart", ({ id }) => {
-    if (id === "run" && gameState === "playing") mage.setRunning(true);
-  });
-  bus.on("sign:sustainend", ({ id }) => {
-    if (id === "run") mage.setRunning(false);
-  });
   bus.on("sign:fire", ({ id }) => {
     if (gameState !== "playing") return;
     if (id === "left") maze.requestTurn("left");
     else if (id === "right") maze.requestTurn("right");
-    else if (id === "turn") maze.requestTurnAround();
-    else if (id === "hint") handleHintReveal();
+    else if (id === "back") maze.requestTurnAround();
   });
-  bus.on("tuning:update", (patch) => {
-    if (patch.particlesK != null) mage.setParticleCount(patch.particlesK * 1000);
-  });
-  bus.on("maze:hintwindow", ({ open }) => hintWindowEl.classList.toggle("hidden", !open));
   bus.on("maze:exit", () => reachExit());
 }
 
@@ -119,12 +86,12 @@ async function boot() {
   teachMode = new TeachMode(pipeline);
   panel = new SignLabPanel({ pipeline, teachMode, video });
 
-  scene = new Scene(canvas);
-  mage = new Mage(scene);
-  await mage.load();
-  maze = new Maze(mage);
+  maze = new Maze();
 
   wireGameplayEvents();
+
+  window.addEventListener("resize", resizeCanvas);
+  resizeCanvas();
 
   startOverlay.classList.add("hidden");
   gameState = "playing";
@@ -136,16 +103,14 @@ async function boot() {
     lastTime = now;
 
     pipeline.update(dt * 1000);
-    mage.update(dt);
 
     if (gameState === "playing") {
       maze.update(dt, gameState);
       distance = maze.distance;
-      hudDistance.textContent = Math.round(distance);
+      hudDistance.textContent = distance;
     }
 
-    scene.updateCamera(mage.group, dt);
-    scene.render();
+    maze.render(ctx, window.innerWidth, window.innerHeight);
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);

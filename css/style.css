@@ -73,39 +73,6 @@ html, body {
 }
 .hud-row b { color: var(--cyan); }
 
-/* ---------- Incantation text ---------- */
-#incantation {
-  position: absolute;
-  top: 110px;
-  left: 50%;
-  transform: translateX(-50%);
-  text-align: center;
-  font-family: var(--serif);
-  font-style: italic;
-  font-size: 20px;
-  color: var(--gold);
-  text-shadow: 0 0 12px rgba(217,165,72,0.6), 0 2px 8px rgba(0,0,0,0.9);
-  max-width: 520px;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.6s ease;
-}
-#incantation.visible { opacity: 1; }
-
-/* ---------- Stalker warning ---------- */
-#stalker-warning {
-  position: absolute;
-  top: 70px;
-  left: 50%;
-  transform: translateX(-50%);
-  text-align: center;
-  color: var(--red);
-  font-family: var(--mono);
-  animation: pulse 0.8s infinite ease-in-out;
-  pointer-events: none;
-}
-#stalker-warning .stalker-glyph { font-size: 28px; }
-#stalker-warning .stalker-text { font-size: 12px; max-width: 260px; }
 @keyframes pulse {
   0%, 100% { opacity: 0.5; }
   50% { opacity: 1; }

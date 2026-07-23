@@ -53,7 +53,6 @@ export class SignLabPanel {
     bind("s-confirm", "v-confirm", "confirmFrames", (v) => Math.round(v), (v) => Math.round(v));
     bind("s-cooldown", "v-cooldown", "cooldownMs", (v) => Math.round(v), (v) => Math.round(v));
     bind("s-smoothing", "v-smoothing", "smoothingAlpha", (v) => v, (v) => v.toFixed(2));
-    bind("s-particles", "v-particles", "particlesK", (v) => v, (v) => Math.round(v));
   }
 
   _wireTeachButtons() {
@@ -95,7 +94,7 @@ export class SignLabPanel {
   _onTeachStart(poseId) {}
 
   _onTeachSample(counts) {
-    this.teachSamplesLabel.textContent = `run:${counts.run||0} · left:${counts.left||0} · right:${counts.right||0} · turn:${counts.turn||0} · hint:${counts.hint||0}`;
+    this.teachSamplesLabel.textContent = `run:${counts.run||0} · left:${counts.left||0} · right:${counts.right||0} · back:${counts.back||0}`;
     document.querySelectorAll("[data-teach]").forEach((b) => b.classList.remove("sampling"));
   }
 
