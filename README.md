@@ -9,10 +9,11 @@ feedback** — wearing a game costume.
 
 | Sign | Pose | Effect |
 |---|---|---|
-| **Run** | open palm, all 4 fingers extended, facing camera | sustain — mage runs while held, eases to idle on release |
-| **Left** | index finger only, pointing left | momentary — one lane-shift, short cooldown |
-| **Right** | index finger only, pointing right | momentary — one lane-shift, short cooldown |
-| **Turn / banish** | both hands clasped together | rare, longer cooldown — mage whirls, bursts a banishing spell. If a shadow-wisp is currently stalking you from behind (watch for the warning), this banishes it and Gemini writes a one-line incantation on screen. If nothing's stalking you, it's just the flourish. |
+| **Run** | open palm, all 4 fingers extended, facing camera | sustain — mage runs while held |
+| **Stop** | close the hand (fist) | releases run — eases back to idle |
+| **Left** | one hand, index finger up, others curled | momentary — one lane-shift, short cooldown |
+| **Right** | one hand, V-sign (index + middle up, others curled) | momentary — one lane-shift, short cooldown |
+| **Turn / banish** | both hands raised up | rare, longer cooldown — mage whirls, bursts a banishing spell. If a shadow-wisp is currently stalking you from behind (watch for the warning), this banishes it and Gemini writes a one-line incantation on screen. If nothing's stalking you, it's just the flourish. |
 
 Dodge obstacle gates by being in the open lane when they reach you. Get
 caught by the stalker 3 times (or hit 3 gates) and the run ends — Gemini
@@ -21,8 +22,8 @@ writes a short closing "verdict" line.
 The Sign Lab panel (right side) is always visible and live: signal graph,
 per-finger ratios, Teach Mode (hold a sign 3s to calibrate it to *your*
 hand/webcam/lighting), and sliders for sensitivity/confirm-frames/cooldown/
-smoothing/deadzone/particle density. Tune it the deck's way: push both
-extremes, binary-search the middle, leave the sliders live.
+smoothing/particle density. Tune it the deck's way: push both extremes,
+binary-search the middle, leave the sliders live.
 
 ## Run it locally
 

@@ -10,7 +10,7 @@ const MODEL = "gemini-2.0-flash";
 const PROMPTS = {
   incantation: (ctx) =>
     `You are the narrator of a short spooky mage-runner game called "Ritual Corridor". ` +
-    `The player just clasped both hands and banished a shadow-wisp that was stalking them ` +
+    `The player just raised both hands and banished a shadow-wisp that was stalking them ` +
     `from behind, mid-run through a cursed corridor. Banishes so far: ${ctx?.banishes ?? 0}. ` +
     `Write ONE short, moody, archaic-sounding incantation line the mage utters at that instant. ` +
     `Max 12 words. No quotation marks, no explanation, just the line.`,

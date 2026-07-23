@@ -120,13 +120,14 @@ export class SignalChannel {
 // intentionally simple, transparent heuristics (not ML classifiers) so the
 // Sign Lab sliders map directly onto them.
 
-function pointFeatures(features) {
-  // Prefer a single hand showing exactly one extended finger (index).
-  let best = null;
+// Best-scoring hand for a one-hand shape check (evaluate every visible hand,
+// keep whichever matches best — so a stray second hand in frame can't starve
+// the read of the hand that's actually doing the sign).
+function bestHandScore(features, scoreFn) {
+  let best = 0;
   for (const h of features.hands || []) {
-    if (h.extended <= 2) {
-      if (!best || h.extended < best.extended) best = h;
-    }
+    const s = scoreFn(h);
+    if (s > best) best = s;
   }
   return best;
 }
@@ -141,36 +142,47 @@ function openPalmScore(features) {
   return clamp(ratioScore * 0.75 + facingScore * 0.25, 0, 1);
 }
 
-function pointScore(features, sign, deadzone) {
-  const h = pointFeatures(features);
-  if (!h) return 0;
-  const indexIsExtended = h.fingerRatio.index > 1.2;
+// Left: index finger up, everything else curled — one hand.
+function indexUpScore(h) {
+  const indexExtended = h.fingerRatio.index > 1.2;
   const othersCurled =
     h.fingerRatio.middle < 1.15 && h.fingerRatio.ring < 1.15 && h.fingerRatio.pinky < 1.15;
-  if (!indexIsExtended || !othersCurled) return 0;
-
-  const angle = h.pointAngle; // negative = left, positive = right
-  if (sign === "left" && angle < -deadzone) {
-    return clamp((-angle - deadzone) / 55, 0, 1);
-  }
-  if (sign === "right" && angle > deadzone) {
-    return clamp((angle - deadzone) / 55, 0, 1);
-  }
-  return 0;
+  if (!indexExtended || !othersCurled) return 0;
+  const extScore = clamp((h.fingerRatio.index - 1.2) / 0.5, 0, 1);
+  const curlScore = clamp((1.15 - Math.max(h.fingerRatio.middle, h.fingerRatio.ring, h.fingerRatio.pinky)) / 0.4, 0, 1);
+  return clamp(extScore * 0.6 + curlScore * 0.4, 0, 1);
 }
 
-function claspScore(features) {
-  if ((features.hands || []).length < 2 || features.handsDistance == null) return 0;
-  // Clasped hands sit close together relative to palm size.
-  return clamp((0.9 - features.handsDistance) / 0.7, 0, 1);
+// Right: V-sign (index + middle up, ring + pinky curled) — one hand.
+function vSignScore(h) {
+  const indexExtended = h.fingerRatio.index > 1.2;
+  const middleExtended = h.fingerRatio.middle > 1.2;
+  const othersCurled = h.fingerRatio.ring < 1.15 && h.fingerRatio.pinky < 1.15;
+  if (!indexExtended || !middleExtended || !othersCurled) return 0;
+  const extScore = clamp((Math.min(h.fingerRatio.index, h.fingerRatio.middle) - 1.2) / 0.5, 0, 1);
+  const curlScore = clamp((1.15 - Math.max(h.fingerRatio.ring, h.fingerRatio.pinky)) / 0.4, 0, 1);
+  return clamp(extScore * 0.6 + curlScore * 0.4, 0, 1);
 }
 
-export function classifyPose(features, deadzone) {
+// Turn: both hands raised up (not touching/clasped — just both up).
+function handsUpScore(features) {
+  const hands = features.hands || [];
+  if (hands.length < 2) return 0;
+  // Normalized landmark y: 0 = top of frame, 1 = bottom. "Up" ramps in as a
+  // wrist rises above mid-frame, maxing out well above shoulder height.
+  const upness = hands
+    .map((h) => clamp((0.55 - h.wrist.y) / 0.35, 0, 1))
+    .sort((a, b) => b - a);
+  // Require BOTH of the two highest hands to be up, not just one.
+  return Math.min(upness[0], upness[1]);
+}
+
+export function classifyPose(features) {
   const scores = {
     run: openPalmScore(features),
-    left: pointScore(features, "left", deadzone),
-    right: pointScore(features, "right", deadzone),
-    turn: claspScore(features),
+    left: bestHandScore(features, indexUpScore),
+    right: bestHandScore(features, vSignScore),
+    turn: handsUpScore(features),
   };
   let dominant = "neutral";
   let best = 0.15; // floor: below this, nothing is "the" dominant pose
@@ -195,7 +207,7 @@ export class SignPipeline {
       right: new SignalChannel("right", this.profile.right),
       turn: new SignalChannel("turn", this.profile.turn),
     };
-    this.lastFeatures = { hands: [], handsDistance: null };
+    this.lastFeatures = { hands: [] };
     this.lastClassification = { scores: { run: 0, left: 0, right: 0, turn: 0 }, dominant: "neutral" };
     this.manualPose = null; // QA override from pose-select buttons
 
@@ -231,9 +243,6 @@ export class SignPipeline {
     if (patch.smoothingAlpha != null) {
       this.globals.smoothingAlpha = patch.smoothingAlpha;
     }
-    if (patch.pointAngleDeadzone != null) {
-      this.globals.pointAngleDeadzone = patch.pointAngleDeadzone;
-    }
   }
 
   setManualPose(pose, active) {
@@ -251,7 +260,7 @@ export class SignPipeline {
   update(dtMs) {
     const classification = this.manualPose
       ? { scores: { run: 0, left: 0, right: 0, turn: 0, [this.manualPose]: 1 }, dominant: this.manualPose }
-      : classifyPose(this.lastFeatures, this.globals.pointAngleDeadzone);
+      : classifyPose(this.lastFeatures);
     this.lastClassification = classification;
 
     for (const [id, channel] of Object.entries(this.channels)) {

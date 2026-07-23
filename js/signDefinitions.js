@@ -4,10 +4,10 @@
 
 export const POSE_META = {
   run: { emoji: "🖐️", label: "run" },
-  left: { emoji: "👉", label: "left" },
-  right: { emoji: "👈", label: "right" },
-  turn: { emoji: "🙏", label: "turn" },
-  neutral: { emoji: "✋", label: "neutral" },
+  left: { emoji: "☝️", label: "left" },
+  right: { emoji: "✌️", label: "right" },
+  turn: { emoji: "🙌", label: "turn" },
+  neutral: { emoji: "✊", label: "neutral" },
 };
 
 export function defaultProfile() {
@@ -43,5 +43,4 @@ export function defaultProfile() {
 
 export const GLOBAL_DEFAULTS = {
   smoothingAlpha: 0.35,
-  pointAngleDeadzone: 25, // degrees
 };

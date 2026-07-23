@@ -70,13 +70,7 @@ function extractFeatures(result) {
     handFeatures(lm, result.handedness?.[i]?.[0]?.categoryName)
   );
 
-  let handsDistance = null;
-  if (hands.length === 2) {
-    const avgPalm = (hands[0].palmWidth + hands[1].palmWidth) / 2;
-    handsDistance = dist(hands[0].wrist, hands[1].wrist) / (avgPalm || 1e-6);
-  }
-
-  return { hands, handsDistance, timestamp: performance.now() };
+  return { hands, timestamp: performance.now() };
 }
 
 export async function initHandTracking(video) {

@@ -53,7 +53,6 @@ export class SignLabPanel {
     bind("s-confirm", "v-confirm", "confirmFrames", (v) => Math.round(v), (v) => Math.round(v));
     bind("s-cooldown", "v-cooldown", "cooldownMs", (v) => Math.round(v), (v) => Math.round(v));
     bind("s-smoothing", "v-smoothing", "smoothingAlpha", (v) => v, (v) => v.toFixed(2));
-    bind("s-deadzone", "v-deadzone", "pointAngleDeadzone", (v) => v, (v) => Math.round(v));
     bind("s-particles", "v-particles", "particlesK", (v) => v, (v) => Math.round(v));
   }
 
