@@ -38,9 +38,19 @@ function angleDelta(a, b) {
 export class Maze {
   constructor() {
     this.running = false;
+    this._freeStraightPass = false;
     this._newMaze();
 
-    bus.on("sign:sustainstart", ({ id }) => { if (id === "run") this.running = true; });
+    bus.on("sign:sustainstart", ({ id }) => {
+      if (id !== "run") return;
+      this.running = true;
+      // A fresh press of "run" earns exactly one free pass through the next
+      // real fork (going straight), so simple corridors stay smooth while a
+      // continuously-held run can't silently coast through every junction —
+      // any junction beyond that first one needs an explicit turn sign, or
+      // another release-and-reapply of run to earn its own free pass.
+      this._freeStraightPass = true;
+    });
     bus.on("sign:sustainend", ({ id }) => { if (id === "run") this.running = false; });
   }
 
@@ -53,6 +63,7 @@ export class Maze {
     this.elapsed = 0;
     this.atExit = false;
     this.anim = null; // { fromRow, fromCol, toRow, toCol, fromHeading, toHeading, t, duration }
+    this._freeStraightPass = false;
   }
 
   reset() {
@@ -103,11 +114,17 @@ export class Maze {
 
   _advance() {
     const opts = this.options;
-    let chosen = null;
-    if (opts.length === 1) chosen = opts[0];
-    else chosen = opts.find((o) => o.rel === "straight") || null;
-    if (!chosen) return; // waiting at a junction for a turn sign
-    this._startStep(chosen);
+    if (opts.length === 1) {
+      this._startStep(opts[0]); // a corridor/bend with no real choice — always free
+      return;
+    }
+    // A real fork (2+ options): only sail through as "straight" on the one
+    // free pass a fresh run press earns; otherwise wait for an explicit sign.
+    if (this._freeStraightPass) {
+      this._freeStraightPass = false;
+      const chosen = opts.find((o) => o.rel === "straight") || null;
+      if (chosen) this._startStep(chosen);
+    }
   }
 
   _startStep(chosen) {

@@ -28,10 +28,18 @@ speed) is revealed on the win screen.
 
 Left/right/back all act the instant you sign them — you don't need to be
 holding walk at the same time (in fact you can't: they're all single-hand
-poses, so briefly drop the walk pose to sign one, then resume walking). If a
-junction only opens left/right (no way straight), the token just waits there
-until you pick one — no penalty. Reach the exit and Gemini writes a short
-closing "escape" line.
+poses, so briefly drop the walk pose to sign one, then resume walking).
+
+Walking through a plain corridor (nowhere else to go) never needs a sign —
+holding walk carries you straight through those on its own. But every real
+junction (anywhere the path could branch, even if going straight is one of
+the options) always needs a deliberate action: either sign left/right/back,
+or drop and re-raise the walk pose to explicitly confirm going straight. A
+single held walk sign only carries you straight through *one* such junction
+for free before it needs re-confirming — so holding walk and doing nothing
+else will always run out of "free" progress at the next real junction and
+wait for you, rather than wandering the whole maze on autopilot. Reach the
+exit and Gemini writes a short closing "escape" line.
 
 The Sign Lab panel (right side) is always visible and live: signal graph,
 per-finger ratios, Teach Mode (hold a sign 3s to calibrate it to *your*
