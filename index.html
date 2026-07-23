@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Ritual Corridor — Sign Lab</title>
+<link rel="stylesheet" href="css/style.css" />
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.168.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.168.0/examples/jsm/",
+    "@mediapipe/tasks-vision": "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs"
+  }
+}
+</script>
+</head>
+<body>
+  <div id="app">
+    <canvas id="scene-canvas"></canvas>
+
+    <video id="webcam-video" autoplay playsinline muted></video>
+
+    <!-- HUD -->
+    <div id="hud">
+      <div class="hud-title">CURSED TECHNIQUE &nbsp;—&nbsp; <span id="hud-state">RESTING</span></div>
+      <div class="hud-row">
+        <span>distance <b id="hud-distance">0</b>m</span>
+        <span>banishes <b id="hud-banishes">0</b></span>
+        <span class="focus-pips" id="hud-focus"><i></i><i></i><i></i></span>
+      </div>
+    </div>
+
+    <!-- Gemini-written incantation, shown briefly on a successful banish -->
+    <div id="incantation" class="hidden"></div>
+
+    <!-- Rear-stalker warning -->
+    <div id="stalker-warning" class="hidden">
+      <div class="stalker-glyph">☠</div>
+      <div class="stalker-text">something is behind you — clasp both hands to banish it</div>
+    </div>
+
+    <!-- Start overlay -->
+    <div id="start-overlay">
+      <div class="start-card">
+        <div class="kicker">SIGNAL &middot; INDEX EXTENSION</div>
+        <h1>Ritual Corridor</h1>
+        <p>A mage runs a spooky corridor, controlled entirely by hand signs read from your webcam.
+           Open palm to run, point left/right to sidestep, clasp both hands to banish what follows you.</p>
+        <button id="start-btn">enter the corridor</button>
+        <p class="fineprint">Requires camera access. Nothing leaves your browser.</p>
+      </div>
+    </div>
+
+    <!-- Game over overlay -->
+    <div id="gameover-overlay" class="hidden">
+      <div class="start-card">
+        <div class="kicker">THE CORRIDOR CLAIMS YOU</div>
+        <h1>Banished</h1>
+        <p>distance: <b id="final-distance">0</b>m &middot; banishes: <b id="final-banishes">0</b></p>
+        <button id="restart-btn">try again</button>
+      </div>
+    </div>
+
+    <!-- Webcam thumbnail + manual pose buttons -->
+    <div id="cam-thumb">
+      <canvas id="cam-overlay" width="220" height="165"></canvas>
+      <div class="pose-buttons">
+        <button data-pose="run">🖐️<span>run</span></button>
+        <button data-pose="left">👉<span>left</span></button>
+        <button data-pose="right">👈<span>right</span></button>
+        <button data-pose="turn">🙏<span>turn</span></button>
+      </div>
+    </div>
+
+    <!-- Sign Lab debug panel -->
+    <aside id="sign-lab">
+      <div class="panel-block">
+        <div class="panel-label">SIGNAL: <span id="dominant-channel">index extension</span></div>
+        <canvas id="signal-graph" width="300" height="70"></canvas>
+      </div>
+
+      <div class="panel-block" id="teach-block">
+        <div class="panel-label warn">🖐 TEACH MODE — perform the sign, we learn your hand</div>
+        <div class="teach-buttons">
+          <button data-teach="run">🖐️ run</button>
+          <button data-teach="left">👉 left</button>
+          <button data-teach="right">👈 right</button>
+          <button data-teach="turn">🙏 turn</button>
+        </div>
+        <div class="teach-status">hold the sign 3s to sample &middot; <span id="teach-samples">run:0 · left:0 · right:0 · turn:0</span></div>
+        <button id="teach-save" class="save-btn">💾 save profile — Sign Lab remembers your hand</button>
+      </div>
+
+      <div class="panel-block">
+        <div class="panel-label ok">✎ SIGN LAB — live read</div>
+        <div class="mono-row" id="finger-readout">T·  I·  M·  R·  P·</div>
+        <div class="mono-row" id="pinch-readout">pinch 0.00 &middot; angle 0° &middot; hands 0</div>
+        <div class="mono-row">pose: <b id="pose-readout">neutral</b></div>
+        <div class="pose-emojis">
+          <span data-pose="run">🖐️</span>
+          <span data-pose="left">👉</span>
+          <span data-pose="right">👈</span>
+          <span data-pose="turn">🙏</span>
+          <span data-pose="neutral">✋</span>
+        </div>
+      </div>
+
+      <details class="panel-block" open>
+        <summary>▶ ADVANCED — thresholds &amp; feel</summary>
+        <div class="slider-row">
+          <label>sensitivity <span id="v-sensitivity">1.00</span></label>
+          <input type="range" id="s-sensitivity" min="0.5" max="1.5" step="0.01" value="1.0" />
+        </div>
+        <div class="slider-row">
+          <label>confirm frames <span id="v-confirm">4</span></label>
+          <input type="range" id="s-confirm" min="1" max="10" step="1" value="4" />
+        </div>
+        <div class="slider-row">
+          <label>cooldown (ms) <span id="v-cooldown">450</span></label>
+          <input type="range" id="s-cooldown" min="100" max="2000" step="50" value="450" />
+        </div>
+        <div class="slider-row">
+          <label>smoothing &alpha; <span id="v-smoothing">0.35</span></label>
+          <input type="range" id="s-smoothing" min="0.05" max="1.0" step="0.01" value="0.35" />
+        </div>
+        <div class="slider-row">
+          <label>point-angle deadzone° <span id="v-deadzone">25</span></label>
+          <input type="range" id="s-deadzone" min="5" max="45" step="1" value="25" />
+        </div>
+        <div class="slider-row">
+          <label>banish particles (&times;1000) <span id="v-particles">6</span></label>
+          <input type="range" id="s-particles" min="1" max="20" step="1" value="6" />
+        </div>
+      </details>
+    </aside>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
