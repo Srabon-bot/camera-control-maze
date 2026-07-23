@@ -5,8 +5,8 @@ const MODEL_URL = "assets/models/mage.glb"; // placeholder rig (see README) — 
 // real mage GLTF+Mixamo export here later; the animation names below
 // ("Idle"/"Run") are the only thing that needs to match.
 
-function easeOutCubic(t) {
-  return 1 - Math.pow(1 - t, 3);
+function easeInOutCubic(t) {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
 export class Mage {
@@ -70,10 +70,14 @@ export class Mage {
 
   // Rotates the mage by deltaRad (signed: negative = left, positive = right,
   // ±PI = about-face). Used both for maze-junction turns (silent) and the
-  // hands-up hint-reveal flourish (a full 2*PI spin back to facing forward).
+  // three-fingers-up hint-reveal flourish (a full 2*PI spin back to facing
+  // forward). Whoever calls this should hold off on moving the mage forward
+  // until the onComplete callback fires — the maze already does this via
+  // its `turning` flag, so a turn always finishes before you're walked into
+  // the new path.
   turnBy(deltaRad, onComplete) {
     if (this.spinTween) return false;
-    const duration = 0.3 + (Math.abs(deltaRad) / Math.PI) * 0.35;
+    const duration = 0.4 + (Math.abs(deltaRad) / Math.PI) * 0.35;
     this.spinTween = { from: this.group.rotation.y, delta: deltaRad, t: 0, duration, onComplete };
     return true;
   }
@@ -84,7 +88,7 @@ export class Mage {
     if (this.spinTween) {
       this.spinTween.t += dt;
       const p = Math.min(1, this.spinTween.t / this.spinTween.duration);
-      const e = easeOutCubic(p);
+      const e = easeInOutCubic(p);
       this.group.rotation.y = this.spinTween.from + e * this.spinTween.delta;
       if (p >= 1) {
         this.group.rotation.y = (this.spinTween.from + this.spinTween.delta) % (Math.PI * 2);
