@@ -139,6 +139,7 @@ html, body {
 }
 .start-card p { color: #b9b0a2; line-height: 1.5; }
 .start-card .fineprint { font-size: 11px; color: #6b6459; }
+.start-card .credit { font-family: var(--mono); font-size: 10px; letter-spacing: 0.05em; color: #55504a; margin-top: 4px; }
 .start-card .score-line { font-family: var(--mono); color: var(--gold); font-size: 15px; letter-spacing: 0.04em; }
 .start-card button {
   margin-top: 18px;
