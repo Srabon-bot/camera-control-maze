@@ -24,6 +24,7 @@
       <div class="hud-title">CURSED LABYRINTH &nbsp;—&nbsp; <span id="hud-state">RESTING</span></div>
       <div class="hud-row">
         <span>wandered <b id="hud-distance">0</b> cells</span>
+        <span>time <b id="hud-timer">0.0</b>s</span>
       </div>
     </div>
 
@@ -32,9 +33,10 @@
       <div class="start-card">
         <div class="kicker">SIGNAL &middot; INDEX EXTENSION</div>
         <h1>Ritual Corridor</h1>
-        <p>A top-down view of a cursed labyrinth. Steer your token through it with hand signs read from
-           your webcam. Open palm to walk, index-up or V-sign to turn left or right at a junction, three
-           fingers up to turn around and retrace your steps.</p>
+        <p>A top-down view of a large cursed labyrinth — the whole layout is visible at once. Steer your
+           token through it with hand signs read from your webcam: open palm to walk, index-up or V-sign
+           to turn left or right at a junction, three fingers up to turn around and retrace your steps.
+           The clock starts the moment you enter — the faster you find the exit, the higher your score.</p>
         <button id="start-btn">enter the maze</button>
         <p class="fineprint">Requires camera access. Nothing leaves your browser.</p>
       </div>
@@ -45,7 +47,8 @@
       <div class="start-card">
         <div class="kicker">THE LABYRINTH RELEASES YOU</div>
         <h1>Free</h1>
-        <p>wandered: <b id="final-distance">0</b> cells</p>
+        <p>wandered: <b id="final-distance">0</b> cells &middot; time: <b id="final-time">0.0</b>s</p>
+        <p class="score-line">score: <b id="final-score">0</b></p>
         <button id="restart-btn">wander again</button>
       </div>
     </div>

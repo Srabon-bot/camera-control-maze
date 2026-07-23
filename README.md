@@ -6,12 +6,15 @@ room in the gallery — **noisy signal → threshold → cooldown → feedback**
 wearing a game costume.
 
 The maze is a proper generated labyrinth (randomized-DFS "perfect maze" —
-exactly one path between any two points, real dead ends, real branches),
-drawn in full on a 2D canvas so the whole layout is visible at once. Your
-token slides cell to cell as you hold the walk sign, turning at junctions
-when you sign a direction. Reverse course any time you like: dead ends
-auto-turn you around, and you can also turn around voluntarily wherever you
-are. There's no fail state, no clock: the only goal is finding the exit.
+exactly one path between any two points, real dead ends, real branches), a
+sizeable 15×15 grid drawn in full on a 2D canvas so the whole layout is
+visible at once. Your token slides cell to cell as you hold the walk sign,
+turning at junctions when you sign a direction. Reverse course any time you
+like: dead ends auto-turn you around, and you can also turn around
+voluntarily wherever you are. There's no fail state, but there is a clock:
+it starts the moment you enter, and reaching the exit faster is worth more
+points — a live timer runs in the HUD, and your score (weighted toward
+speed) is revealed on the win screen.
 
 ## Controls (all discrete hand signs, no keyboard)
 
@@ -24,8 +27,11 @@ are. There's no fail state, no clock: the only goal is finding the exit.
 | **Back** | one hand, three fingers up (index + middle + ring, pinky curled) | reverses your heading and steps back into the cell you just came from — works anywhere, not just at dead ends. Useful for regretting a branch. |
 
 If a junction only opens left/right (no way straight), the token pauses
-there until you pick one — no penalty, just waits. Reach the exit and Gemini
-writes a short closing "escape" line.
+there until you pick one — no penalty, just waits. Since the whole maze is
+visible from the start, plan your turn ahead of the junction: sign left or
+right any time before you arrive (the walk sign and a turn sign can't be
+shown at once, so briefly drop the walk pose, sign the turn, then resume
+walking). Reach the exit and Gemini writes a short closing "escape" line.
 
 The Sign Lab panel (right side) is always visible and live: signal graph,
 per-finger ratios, Teach Mode (hold a sign 3s to calibrate it to *your*

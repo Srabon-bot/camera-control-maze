@@ -14,7 +14,10 @@ const winOverlay = document.getElementById("gameover-overlay");
 const restartBtn = document.getElementById("restart-btn");
 const hudState = document.getElementById("hud-state");
 const hudDistance = document.getElementById("hud-distance");
+const hudTimer = document.getElementById("hud-timer");
 const finalDistance = document.getElementById("final-distance");
+const finalTime = document.getElementById("final-time");
+const finalScore = document.getElementById("final-score");
 const canvas = document.getElementById("scene-canvas");
 const ctx = canvas.getContext("2d");
 
@@ -36,6 +39,8 @@ async function reachExit() {
   gameState = "won";
   hudState.textContent = "FOUND THE WAY OUT";
   finalDistance.textContent = distance;
+  finalTime.textContent = maze.elapsed.toFixed(1);
+  finalScore.textContent = maze.score;
   winOverlay.classList.remove("hidden");
   const verdict = await requestVerdict({ distance });
   if (gameState === "won") {
@@ -49,6 +54,7 @@ async function reachExit() {
 function resetRun() {
   distance = 0;
   hudDistance.textContent = "0";
+  hudTimer.textContent = "0.0";
   hudState.textContent = "RESTING";
   document.getElementById("verdict-line")?.remove();
   maze.reset();
@@ -108,6 +114,7 @@ async function boot() {
       maze.update(dt, gameState);
       distance = maze.distance;
       hudDistance.textContent = distance;
+      hudTimer.textContent = maze.elapsed.toFixed(1);
     }
 
     maze.render(ctx, window.innerWidth, window.innerHeight);

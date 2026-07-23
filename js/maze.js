@@ -12,7 +12,7 @@ import {
   OPPOSITE,
 } from "./mazeGraph.js";
 
-const MAZE_SIZE = 7;
+const MAZE_SIZE = 15;
 const STEP_BASE_DURATION = 0.32; // seconds for a straight cell-to-cell step
 const STEP_TURN_DURATION = 0.22; // extra seconds added per 180° of turning
 
@@ -22,6 +22,12 @@ function easeInOutCubic(t) {
 
 function clamp(v, lo, hi) {
   return Math.max(lo, Math.min(hi, v));
+}
+
+// Faster exits are worth more: a smooth curve from 10000 (an instant exit)
+// down toward 0 the longer it takes, rather than a hard time cap.
+export function computeScore(elapsedSeconds) {
+  return Math.max(0, Math.round(10000 / (elapsedSeconds + 1)));
 }
 
 // Shortest signed angular distance from a to b, in degrees, in (-180, 180].
@@ -45,6 +51,7 @@ export class Maze {
     this.pendingChoice = null;
     this.options = junctionOptions(this.mazeData.cells[this.pos.row][this.pos.col], this.heading);
     this.distance = 0;
+    this.elapsed = 0;
     this.atExit = false;
     this.anim = null; // { fromRow, fromCol, toRow, toCol, fromHeading, toHeading, t, duration }
   }
@@ -77,6 +84,7 @@ export class Maze {
 
   update(dt, gameState) {
     if (gameState !== "playing" || this.atExit) return { atExit: this.atExit };
+    this.elapsed += dt;
 
     if (this.anim) {
       this.anim.t += dt;
@@ -130,6 +138,10 @@ export class Maze {
     } else {
       this.options = junctionOptions(this.mazeData.cells[toPos.row][toPos.col], toHeading);
     }
+  }
+
+  get score() {
+    return computeScore(this.elapsed);
   }
 
   _displayState() {
